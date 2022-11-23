@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+programm.Rproj
+/run_logging
+/qsub_run_logging
+/qsub_run_error
+/qsub_log
+/history_sh
+/history_20210105
+/history
+/batch_log
+/error_log
