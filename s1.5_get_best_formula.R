@@ -26,9 +26,8 @@ time_op <- Sys.time()
 # source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgroup/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata'
 # out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
 
-source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_Gender.RData'
+source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarzRehoAAL116_Gender.RData'
 out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
-
 
 method <- 'cor_step'  # ['step', 'cor_step', 'all']
 cor_limit <- 0.9  # only using in step_cor
@@ -185,9 +184,19 @@ sprintf('model saved: %s\n', model_save_path) %>% cat
     m_summ_i <- summary(m_i)
     coef_i <- m_summ_i$coefficients %>% as.data.frame()
     coef_i["Features"] <- rownames(coef_i)
+    coef_i$logp <- -log(coef_i[, "Pr(>|t|)"], 10)
 
-    gg_coef_bar <- ggplot(coef_i, aes(x = Features, y = Estimate)) +
+    # bonf_thre <- -log(0.05 / nrow(coef_i), 10)
+    bonf_thre <- 0.05 / nrow(coef_i)
+
+    coef_i$sig <- "NS"
+    coef_i$sig[(coef_i[, "Pr(>|t|)"] < 0.05) & (coef_i[, "Pr(>|t|)"] > bonf_thre)] <- "005S"
+    coef_i$sig[(coef_i[, "Pr(>|t|)"] <= bonf_thre)] <- "BonfS"
+    coef_i$sig <- factor(coef_i$sig, levels = c("NS", "005S", "BonfS"))
+
+    gg_coef_bar <- ggplot(coef_i, aes(x = Features, y = Estimate, fill = sig)) +
       geom_col() +
+      labs(x = "variables", y = "Coeff", title = scale_name) +
       theme(
         legend.title = element_blank(),
         legend.position = "right",
@@ -197,7 +206,7 @@ sprintf('model saved: %s\n', model_save_path) %>% cat
     ggsave(coef_bar_out_path,
       plot = gg_coef_bar, device = NULL, path = NULL,
       scale = 1, width = 12, height = 6, units = "in",
-      dpi = 300, limitsize = T
+      dpi = 300, limitsize = TRUE
     )
 
     cat(sprintf("Coef bar out: %s\n", coef_bar_out_path))
