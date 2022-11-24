@@ -1,6 +1,7 @@
 # s1.5: get best formula of the data
 rm(list=ls())
 library(pheatmap)
+library(ggplot2)
 source('/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/programm/imp_compare_utils.R')
 
 time_op <- Sys.time()
@@ -22,7 +23,10 @@ time_op <- Sys.time()
 #source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_zRehoAAL116Center_Gender_CorCombine_Data.Rdata'
 #out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
 
-source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgroup/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata'
+# source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgroup/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
+
+source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_Gender.RData'
 out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
 
 
@@ -164,6 +168,40 @@ sprintf('model saved: %s\n', model_save_path) %>% cat
     dev.off()
   }
   sprintf('Cor heatmap saved! %s\n', cor_out_dir) %>% cat()
+}
+
+# save model coef bar
+{
+  coef_bar_out_dir <- file.path(save_dir, sprintf('CoefBar__%s__', method))
+  if (!file.exists(coef_bar_out_dir)){
+    dir.create(coef_bar_out_dir, recursive = TRUE)
+    sprintf("Create out dir! %s\n", coef_bar_out_dir) %>% cat()
+  }
+
+  for(scale_name in names(step_model)){
+    coef_bar_out_path <- file.path(coef_bar_out_dir, sprintf('%s.png', scale_name))
+
+    m_i <- step_model[[scale_name]]
+    m_summ_i <- summary(m_i)
+    coef_i <- m_summ_i$coefficients %>% as.data.frame()
+    coef_i["Features"] <- rownames(coef_i)
+
+    gg_coef_bar <- ggplot(coef_i, aes(x = Features, y = Estimate)) +
+      geom_col() +
+      theme(
+        legend.title = element_blank(),
+        legend.position = "right",
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1)
+      )
+
+    ggsave(coef_bar_out_path,
+      plot = gg_coef_bar, device = NULL, path = NULL,
+      scale = 1, width = 12, height = 6, units = "in",
+      dpi = 300, limitsize = T
+    )
+
+    cat(sprintf("Coef bar out: %s\n", coef_bar_out_path))
+  }
 }
 
 # for check------------------------------------------------
