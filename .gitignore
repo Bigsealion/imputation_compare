@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+workspace.RData
 programm.Rproj
 /run_logging
 /qsub_run_logging
