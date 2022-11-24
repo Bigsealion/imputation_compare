@@ -6,7 +6,7 @@ library(logging)
 # set parameter ==========================================================
 # data is X
 data_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/har_csv/"
-data_name <- "HarNoEB_clear_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
+data_name <- "HarNoEB_clear_Rest_zReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
 out_name <- "HarReho"
 
 # data_name <- "HarNoEB_clear_Rest_zReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
@@ -41,10 +41,11 @@ cog_info <- select(single_data_list$TotalData$Base, c("RefID", "gender"))
 
 out_data <- merge(bi_data, cog_info, by = "RefID", all = FALSE)
 out_data <- dplyr::relocate(out_data, gender, .after = "RefID")
-out_data <- dplyr::rename(out_data, matched_center = true_center)
+out_data <- dplyr::select(out_data, -"true_center")  # Har data, removing center info
+# out_data <- dplyr::rename(out_data, matched_center = true_center)
 
 # out =====================================================================
-match_data <- list(tmp = out_data)
+match_data <- list(tmp = out_data)  # rename tmp to out_name
 names(match_data)[1] <- out_name
 
 save(match_data, file = out_path)
