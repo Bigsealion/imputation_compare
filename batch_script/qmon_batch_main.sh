@@ -29,7 +29,7 @@ function CheckPara()  # check parameter
 
 
 # parameter
-script_dir=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/programm
+script_dir=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/programm/batch_script
 qsub_list=(all.q clc cluster1 cluster2 cluster3 cluster40 cluster5 fmri gpu long.q mise sbm short.q verylong.q veryshort.q whole)
 method_list=(CCA mice_pmm mice_norm_pred mice_mean mice_rf vim_em)
 
