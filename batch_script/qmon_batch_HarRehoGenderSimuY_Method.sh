@@ -1,4 +1,6 @@
 #!/bin/bash
+# ========= NOT RUN THIS SCRIPT DIRECTLY =================
+# this script name must same as datasetname! (to be identified by qmon_batch_main.sh)
 # For impute the missing data, this script will be Called By bash script: qmon_batch_main.sh
 # this script need be changed
 # input opt is -m, in ['CCA', mice_mean'. 'mice_pmm', 'mice_norm_pred', 'raw', 'vim_em']
@@ -23,33 +25,35 @@ mkdir -p $error_dir
 #echo "used method: ${method}"
 
 # set parameter by manual ======================
-data_file_name=s1.7_SimulationOutcomeData.RData  # change this, and follow RData name
+# "" will highlight some general modified strings in VSCode 
+# data_file_name="s1.4_HarRehoAAL116_Gender.RData"
+data_file_name="s1.7_SimulationOutcomeData.RData"  # change this, and follow RData name
 
-source_p[1]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_TrueMiss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-10-07-19:59:00.RData
+source_p[1]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_TrueMiss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-21:59:30.RData"
 save_dir[1]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${dataset_name}_TrueMiss_NoRep0.8
 pt_s_dir[1]=${save_dir1}/pattern
 log_path[1]=$log_dir/s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_TrueMiss_NoRep0.8_boot100.txt
 err_path[1]=$error_dir/ERROR_s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_TrueMiss_NoRep0.8_boot100.txt
 
-source_p[2]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_20Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-10-07-12:06:30.RData
+source_p[2]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_20Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:00:06.RData"
 save_dir[2]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${dataset_name}_20Miss_NoRep0.8
 pt_s_dir[2]=${save_dir2}/pattern
 log_path[2]=$log_dir/s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_20Miss_NoRep0.8_boot100.txt
 err_path[2]=$error_dir/ERROR_s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_20Miss_NoRep0.8_boot100.txt
 
-source_p[3]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_40Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-10-07-11:51:59.RData
+source_p[3]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_40Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:03:15.RData"
 save_dir[3]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${dataset_name}_40Miss_NoRep0.8
 pt_s_dir[3]=${save_dir3}/pattern
 log_path[3]=$log_dir/s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_40Miss_NoRep0.8_boot100.txt
 err_path[3]=$error_dir/ERROR_s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_40Miss_NoRep0.8_boot100.txt
 
-source_p[4]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_60Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-10-07-12:00:00.RData
+source_p[4]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_60Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:04:53.RData"
 save_dir[4]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${dataset_name}_60Miss_NoRep0.8
 pt_s_dir[4]=${save_dir4}/pattern
 log_path[4]=$log_dir/s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_60Miss_NoRep0.8_boot100.txt
 err_path[4]=$error_dir/ERROR_s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_60Miss_NoRep0.8_boot100.txt
 
-source_p[5]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_80Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-10-07-11:58:49.RData
+source_p[5]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${dataset_name}_80Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:06:44.RData"
 save_dir[5]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${dataset_name}_80Miss_NoRep0.8
 pt_s_dir[5]=${save_dir5}/pattern
 log_path[5]=$log_dir/s3.1_Imp_${method}_${time_op}_${qsub_name}_${dataset_name}_80Miss_NoRep0.8_boot100.txt
@@ -60,9 +64,7 @@ err_path[5]=$error_dir/ERROR_s3.1_Imp_${method}_${time_op}_${qsub_name}_${datase
 echo
 echo "Starting imputation: "`date`
 echo "method: ${method}"
-if [ ${qsub_name} == 'auto_qsub_node' ]; then
-  echo "input -q is auto_qsub_node, node will be assigned automatically!"
-fi
+echo "qsub name: ${qsub_name}"
 
 # get run index
 if [ "$run_index" == "" ]; then run_index=`echo ${!source_p[*]}`; fi
