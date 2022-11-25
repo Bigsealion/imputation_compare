@@ -28,10 +28,15 @@ set.seed(12345)
 # formula_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_zRehoAAL116_Gender_CorCombine_Data.Rdata/model__cor_step__.RData'
 # out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/reho_IntTCoef/'
 
+# complete_data_path <- ''
+# raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgroup/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata"
+# formula_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata/model__cor_step__.RData'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/cog_newgroup/cvlt_cov/'
+
 complete_data_path <- ''
-raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgroup/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata"
-formula_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata/model__cor_step__.RData'
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/cog_newgroup/cvlt_cov/'
+raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_Gender.RData"
+formula_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_HarRehoAAL116_Gender.RData/model__cor_step__.RData"
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/HarReho_gender/'
 
 is_imp_raw_data <- T  # if complete_data_path, setting F
 is_standard_data <- F

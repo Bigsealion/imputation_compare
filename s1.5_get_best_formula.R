@@ -29,10 +29,13 @@ time_op <- Sys.time()
 source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarzRehoAAL116_Gender.RData'
 out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
 
+# source_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_age.RData'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula'
+
 method <- 'cor_step'  # ['step', 'cor_step', 'all']
 cor_limit <- 0.9  # only using in step_cor
 
-# mkdir out dir
+# mkdir out dir ================================================
 save_dir <- file.path(out_dir, basename(source_path))
 if (!file.exists(save_dir)){
   dir.create(save_dir, recursive = T)
