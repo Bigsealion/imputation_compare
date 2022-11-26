@@ -1,4 +1,7 @@
 # 2021.02.23 simulation y
+# ====================== IMPORTANT ====================
+# Modify "try_var" mannually to get the desired model R2
+# ====================== IMPORTANT ====================
 rm(list=ls())
 library(dplyr)
 library(mice)
@@ -33,10 +36,15 @@ set.seed(12345)
 # formula_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_x1.2_CovCVLT_ZsHarQCT1_CorCombine_Data.Rdata/model__cor_step__.RData'
 # out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/cog_newgroup/cvlt_cov/'
 
+# complete_data_path <- ''
+# raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_Gender.RData"
+# formula_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_HarRehoAAL116_Gender.RData/model__cor_step__.RData"
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/HarReho_gender/'
+
 complete_data_path <- ''
-raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_Gender.RData"
-formula_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_HarRehoAAL116_Gender.RData/model__cor_step__.RData"
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/HarReho_gender/'
+raw_data_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/s1.4_HarRehoAAL116_age.RData"
+formula_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_HarRehoAAL116_age.RData/model__cor_step__.RData"
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/HarReho_age/'
 
 is_imp_raw_data <- T  # if complete_data_path, setting F
 is_standard_data <- F
@@ -44,7 +52,11 @@ is_balance_coef <- T # balance simu coef by col mean
 is_load_coef <- T  # if load coef from formula_path, setting T, else will create new coef
 is_add_intercept <- T  # if using this, intercept of raw model will be add (in is_load_coef)
 
-# create out dir
+# using try_var to control model R2 -----------------> modify this !!!
+# Old reho 0.25, cvlt 0.15, Reho_age 0.52
+try_var <- 0.52
+
+# create out dir ===================================================
 if (!file.exists(out_dir)){
   dir.create(out_dir,recursive = T)
   sprintf('Create out dir! %s\n', out_dir) %>% cat()
@@ -157,7 +169,8 @@ for (scale_name in names(standard_data)){
   
   # matrix multiply
   # simulation_y <- as.matrix(x_df) %*% simu_coef + rnorm(nrow(x_df), 0, 1)*0.15 + simu_intercept # not var_num # cvlt
-  simulation_y <- as.matrix(x_df) %*% simu_coef + rnorm(nrow(x_df), 0, 1)*0.25 + simu_intercept # not var_num # reho
+  # simulation_y <- as.matrix(x_df) %*% simu_coef + rnorm(nrow(x_df), 0, 1)*0.25 + simu_intercept # not var_num # reho
+  simulation_y <- as.matrix(x_df) %*% simu_coef + rnorm(nrow(x_df), 0, 1)*try_var + simu_intercept 
   
   simulation_y_data[[scale_name]][, 2] <- simulation_y %>% as.numeric() # must change to num, else format of y is matrix
   names(simulation_y_data[[scale_name]])[2] <- 'simulation_y'
