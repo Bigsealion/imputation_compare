@@ -1,4 +1,5 @@
 # 2022.11.26 Journal Figure and table (new data)
+# Fig shape is 2*2, 2*3, 2*2
 rm(list = ls())
 library(stringr)
 library(ggplot2)
@@ -10,22 +11,33 @@ library(data.table)
 library(pheatmap)
 library(patchwork)
 
-get_group_color_list <- function(group_input, group_default, color_list) {
-  # e.g.
-  # group_input = ('CCA', "PMM")
-  # group_default = ('CCA', "EM", "PMM")
-  # color_list = ('Red', "Blue", "Yellow")
-  # The elements in group_default and color_list are corresponding
-  # return is c("Red", "Yellow"), which is color of group input
-  return(color_list[match(group_input, group_default)])
-}
-
-
 # set parameters ========================================================
-out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/JournalOut"
+# file list ----------------------------------------------------------
+file_pattern_list <- list()
+file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+
+# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+
+# file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Age"]] <- "HarRehoAge_((True|\\d+)(M|m)iss)_NoRep0.8"
+
+# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Y2"]] <- "HarRehoAgeSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+
+# out dir ------------------------------------------------------------
+tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
+
+out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender")
+# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2")
+# out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
+# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
+
 fig_out_dir <- file.path(out_dir, "Fig")
 data_out_dir <- file.path(out_dir, "Data")
 
+# others --------------------------------------------------------------
 missrate_level <- c("TrueMiss", "20Miss", "40Miss", "60Miss", "80Miss")
 method_level <- c("Complete", "CCA", "Mean", "Pred", "EM", "PMM")
 color_list <- c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#2745a2", "#F564E3")
@@ -41,18 +53,15 @@ for (out_dir_i in c(fig_out_dir, data_out_dir)) {
 # figure 1, impute value, NRMSE and PCC, line chart ====================
 # mr is missing_rate, met is method, sc is scale
 if (T) {
+  cat(sprintf("=================== Fig1 impute value compare ===================="))
   # set parameters
   {
     source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/"
     subdir_name <- "imputed_value"
 
-    fig_out_path <- file.path(fig_out_dir, "ImpValueCompare_RealData.pdf")
+    fig_out_path <- file.path(fig_out_dir, "ImpValueCompare_Data.pdf")
     NRMSE_csv_save_path <- file.path(data_out_dir, "ALL_ImpValue_NRMSE.csv")
     PCC_csv_save_path <- file.path(data_out_dir, "ALL_ImpValue_PCC.csv")
-
-    file_pattern_list <- list()
-    file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
-    file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
   }
 
   # run in each data pattern
@@ -143,8 +152,7 @@ if (T) {
           NRMSE_info_stat[, "method"] <- factor(NRMSE_info_stat[, "method"], levels = method_level)
         }
 
-        # ggplot bar
-        used_color_list <- get_group_color_list(unique(NRMSE_info_stat$method), method_level, color_list)
+        # ggplot line
         gg_list_all[["NRMSE"]][[save_name]] <-
           ggplot(NRMSE_info_stat, aes(x = missrate, y = mean, fill = method)) +
           geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
@@ -152,9 +160,10 @@ if (T) {
             width = 0.05,
             linewidth = 0.5
           ) +
-          geom_line(aes(group = method), linewidth = 0.6) +
+          geom_line(aes(group = method, color = method), linewidth = 0.6) +
           geom_point(aes(group = method), shape = 21, size = 3) +
           scale_fill_manual(breaks = method_level, values = color_list) +
+          scale_color_manual(breaks = method_level, values = color_list) +
           labs(x = "Subject Miss Rate", y = "Imputation Value NRMSE", title = save_name, fill = "Method") +
           guides(fill = guide_legend(reverse = FALSE)) +
           theme_classic() +
@@ -186,8 +195,7 @@ if (T) {
           PCC_info_stat[, "method"] <- factor(PCC_info_stat[, "method"], levels = method_level)
         }
 
-        # ggplot bar
-        used_color_list <- get_group_color_list(unique(PCC_info_stat$method), method_level, color_list)
+        # ggplot line
         gg_list_all[["PCC"]][[save_name]] <-
           ggplot(PCC_info_stat, aes(x = missrate, y = mean, fill = method)) +
           geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
@@ -195,9 +203,10 @@ if (T) {
             width = 0.05,
             linewidth = 0.5
           ) +
-          geom_line(aes(group = method), linewidth = 0.6) +
+          geom_line(aes(group = method, color = method), linewidth = 0.6) +
           geom_point(aes(group = method), shape = 21, size = 3) +
           scale_fill_manual(breaks = method_level, values = color_list) +
+          scale_color_manual(breaks = method_level, values = color_list) +
           labs(x = "Subject Miss Rate", y = "Imputation Value PCC", title = save_name, fill = "Method") +
           guides(fill = guide_legend(reverse = FALSE)) +
           theme_classic() +
@@ -217,8 +226,13 @@ if (T) {
 
   # combine figure, save
   {
-    gg_comb <- (gg_list_all[["NRMSE"]][[1]] + gg_list_all[["PCC"]][[1]]) /
-      (gg_list_all[["NRMSE"]][[2]] + gg_list_all[["PCC"]][[2]]) +
+    # gg_comb <- (gg_list_all[["NRMSE"]][[1]] + gg_list_all[["PCC"]][[1]]) /
+    #   (gg_list_all[["NRMSE"]][[2]] + gg_list_all[["PCC"]][[2]]) +
+    #   plot_layout(guides = "collect") +
+    #   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+
+    gg_comb <- (gg_list_all[["NRMSE"]][[1]] + gg_list_all[["NRMSE"]][[2]]) /
+      (gg_list_all[["PCC"]][[1]] + gg_list_all[["PCC"]][[2]]) +
       plot_layout(guides = "collect") +
       plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
@@ -234,10 +248,10 @@ if (T) {
   {
     # melt data
     NRMSE_reshape_all <- reshape2::melt(NRMSE_list_all) %>% spread(L2, value)
-    colnames(NRMSE_reshape_all)[1:4] <- c("stat", "scale", "method", "ScaleSaveName")
+    colnames(NRMSE_reshape_all)[1:4] <- c("stat", "scale", "method", "scale_save_name")
 
     PCC_reshape_all <- reshape2::melt(PCC_list_all) %>% spread(L2, value)
-    colnames(PCC_reshape_all)[1:4] <- c("stat", "scale", "method", "ScaleSaveName")
+    colnames(PCC_reshape_all)[1:4] <- c("stat", "scale", "method", "scale_save_name")
 
     write.csv(NRMSE_reshape_all, file = NRMSE_csv_save_path)
     write.csv(PCC_reshape_all, file = PCC_csv_save_path)
@@ -248,7 +262,8 @@ if (T) {
 }
 
 # figure 2, model PB, CR and AW, line chart ============================
-if (F) {
+if (T) {
+  cat(sprintf("=================== Fig2 impute model compare ===================="))
   # set parameter
   {
     source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/"
@@ -260,11 +275,7 @@ if (F) {
       "AW_per_bias" = "AW"
     )
 
-    fig_out_path <- file.path(fig_out_dir, "ImpModelCompare_RealData.pdf")
-
-    file_pattern_list <- list()
-    file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
-    file_pattern_list[["ReHo_Gender"]] <- "Reho_age_((True|\\d+)(M|m)iss)_NoRep0.8"
+    fig_out_path <- file.path(fig_out_dir, "ImpModelCompare_Data.pdf")
   }
 
   # run in each pattern
@@ -330,7 +341,6 @@ if (F) {
         }
 
         # ggplot bar
-        used_color_list <- get_group_color_list(unique(NRMSE_info_stat$method), method_level, color_list)
         gg_list_all[[indicator_name]][[save_name]] <-
           ggplot(Indicator_stat, aes(x = missrate, y = mean, fill = method)) +
           geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
@@ -338,9 +348,10 @@ if (F) {
             width = 0.05,
             linewidth = 0.5
           ) +
-          geom_line(aes(group = method), linewidth = 0.6) +
+          geom_line(aes(group = method, color = method), linewidth = 0.6) +
           geom_point(aes(group = method), shape = 21, size = 3) +
           scale_fill_manual(breaks = method_level, values = color_list) +
+          scale_color_manual(breaks = method_level, values = color_list) +
           labs(
             x = "Subject Miss Rate",
             y = sprintf("Model %s", out_name_list[[indicator_name]]),
@@ -359,6 +370,13 @@ if (F) {
             legend.title = element_text(size = 15),
             legend.text = element_text(size = 12)
           )
+
+        if (indicator_name == "coverage_rate"){
+          # add 95% CR hline in figure
+          gg_list_all[[indicator_name]][[save_name]]  <-
+            gg_list_all[[indicator_name]][[save_name]] +
+            geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 0.5)
+        }
       }
     }
 
@@ -366,7 +384,7 @@ if (F) {
     {
       Indicator_list_all_melt <- reshape2::melt(Indicator_list_all)
       Indicator_list_all_melt <- Indicator_list_all_melt[-which(Indicator_list_all_melt[, "L4"] == "__aux"), ]
-      colnames(Indicator_list_all_melt) <- c("stat", "value", "sc", "method", "missrate", "sc_save_ame")
+      colnames(Indicator_list_all_melt) <- c("stat", "value", "scale", "method", "missrate", "scale_save_name")
       Indicator_list_all_mr <- spread(Indicator_list_all_melt, missrate, value)
 
       csv_save_path <- file.path(data_out_dir, sprintf("Combine_Model_Mean_%s.csv", indicator_name))
@@ -378,14 +396,20 @@ if (F) {
 
   # combine figure, save (by patchwork)
   {
-    gg_PBNED_comb <- (gg_list_all[[1]][[1]] + gg_list_all[[2]][[1]] + gg_list_all[[3]][[1]]) /
-      (gg_list_all[[1]][[2]] + gg_list_all[[2]][[2]] + gg_list_all[[3]][[2]]) +
+    # gg_PBNED_comb <- (gg_list_all[[1]][[1]] + gg_list_all[[2]][[1]] + gg_list_all[[3]][[1]]) /
+    #   (gg_list_all[[1]][[2]] + gg_list_all[[2]][[2]] + gg_list_all[[3]][[2]]) +
+    #   plot_layout(guides = "collect") +
+    #   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+
+    gg_PBNED_comb <- (gg_list_all[[1]][[1]] + gg_list_all[[1]][[2]]) /
+      (gg_list_all[[2]][[1]] + gg_list_all[[2]][[2]]) /
+      (gg_list_all[[3]][[1]] + gg_list_all[[3]][[2]]) +
       plot_layout(guides = "collect") +
       plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
     ggsave(fig_out_path,
       plot = gg_PBNED_comb, device = NULL, path = NULL,
-      scale = 1, width = 16, height = 8, units = "in",
+      scale = 1, width = 12, height = 12, units = "in",
       dpi = 300, limitsize = T
     )
     cat(sprintf("fig out: %s\n", fig_out_path))
@@ -393,17 +417,14 @@ if (F) {
 }
 
 # fig 3, predict RMSE, PCC, line chart ==================================
-if (F) {
+if (T) {
+  cat(sprintf("=================== Fig3 model predict compare ===================="))
   # set parameter
   {
     source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/"
 
-    fig_out_path <- file.path(fig_out_dir, "PredictValueCompare_RealData.pdf")
+    fig_out_path <- file.path(fig_out_dir, "PredictValueCompare_Data.pdf")
     subdir_name <- "cv_res"
-
-    file_pattern_list <- list()
-    file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
-    file_pattern_list[["ReHo_Gender"]] <- "Reho_age_((True|\\d+)(M|m)iss)_NoRep0.8"
   }
 
   # run in each data pattern
@@ -468,9 +489,10 @@ if (F) {
             width = 0.05,
             linewidth = 0.5
           ) +
-          geom_line(aes(group = method), linewidth = 0.6) +
+          geom_line(aes(group = method, color = method), linewidth = 0.6) +
           geom_point(aes(group = method), shape = 21, size = 3) +
           scale_fill_manual(breaks = method_level, values = color_list) +
+          scale_color_manual(breaks = method_level, values = color_list) +
           labs(x = "Subject Miss Rate", y = sprintf("Predict %s", compare_ind), title = scale_name, fill = "Method") +
           guides(fill = guide_legend(reverse = F)) +
           theme_classic() +
@@ -498,8 +520,13 @@ if (F) {
       }
     }
 
-    gg_combine <- (gg_list_all[["RMSE"]][[1]] + gg_list_all[["PCC"]][[1]]) /
-      (gg_list_all[["RMSE"]][[2]] + gg_list_all[["PCC"]][[2]]) +
+    # gg_combine <- (gg_list_all[["RMSE"]][[1]] + gg_list_all[["PCC"]][[1]]) /
+    #   (gg_list_all[["RMSE"]][[2]] + gg_list_all[["PCC"]][[2]]) +
+    #   plot_layout(guides = "collect") +
+    #   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+
+    gg_combine <- (gg_list_all[["RMSE"]][[1]] + gg_list_all[["RMSE"]][[2]]) /
+      (gg_list_all[["PCC"]][[2]] + gg_list_all[["PCC"]][[2]]) +
       plot_layout(guides = "collect") +
       plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
