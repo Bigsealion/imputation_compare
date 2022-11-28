@@ -29,8 +29,8 @@ file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep
 # out dir ------------------------------------------------------------
 tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
 
-out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender")
-# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2")
+out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")
+# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
 # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
 
@@ -526,7 +526,7 @@ if (T) {
     #   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
     gg_combine <- (gg_list_all[["RMSE"]][[1]] + gg_list_all[["RMSE"]][[2]]) /
-      (gg_list_all[["PCC"]][[2]] + gg_list_all[["PCC"]][[2]]) +
+      (gg_list_all[["PCC"]][[1]] + gg_list_all[["PCC"]][[2]]) +
       plot_layout(guides = "collect") +
       plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
