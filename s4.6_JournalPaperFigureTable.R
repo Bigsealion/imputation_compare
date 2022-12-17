@@ -14,11 +14,11 @@ library(patchwork)
 # set parameters ========================================================
 # file list ----------------------------------------------------------
 file_pattern_list <- list()
-file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
-file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
 
-# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
-# file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
 # file_pattern_list[["ReHo_Age"]] <- "HarRehoAge_((True|\\d+)(M|m)iss)_NoRep0.8"
@@ -29,8 +29,8 @@ file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep
 # out dir ------------------------------------------------------------
 tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
 
-out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")
-# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+# out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")
+out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
 # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
 
@@ -52,7 +52,7 @@ for (out_dir_i in c(fig_out_dir, data_out_dir)) {
 
 # figure 1, impute value, NRMSE and PCC, line chart ====================
 # mr is missing_rate, met is method, sc is scale
-if (T) {
+if (F) {
   cat(sprintf("=================== Fig1 impute value compare ===================="))
   # set parameters
   {
@@ -262,7 +262,7 @@ if (T) {
 }
 
 # figure 2, model PB, CR and AW, line chart ============================
-if (T) {
+if (F) {
   cat(sprintf("=================== Fig2 impute model compare ===================="))
   # set parameter
   {

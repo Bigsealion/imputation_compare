@@ -52,8 +52,20 @@ time_op <- Sys.time()
 # summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/ReHo_IntTCoefSimuY_80Miss_NoRep0.8'
 # out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/ReHo_IntTCoefSimuY_80Miss_NoRep0.8'
 
-summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_Cov_TrueMiss_NoRep0.8'
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_Cov_TrueMiss_NoRep0.8'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_Cov_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_Cov_TrueMiss_NoRep0.8'
+
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGender_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoGender_80Miss_NoRep0.8'
+
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
+
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAgeSimuY_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoAgeSimuY_80Miss_NoRep0.8'
+
+summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAge_TrueMiss_NoRep0.8'
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoAge_TrueMiss_NoRep0.8'
 
 # scale_choose <- c('Base', 'RO', 'UG', 'GoNogo', 'nBack', 'PassBall', 'CVLT')
 # scale_choose <- c('RO', 'PassBall')
@@ -235,7 +247,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$bias_dir, sprintf('%s_Bias.png', psy)),
              plot = gg_bias, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -275,7 +288,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$pre_bias_dir, sprintf('%s_PercentBias.png', psy)),
              plot = gg_pb, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -318,7 +332,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$pre_bias_diffcomp_Cut10_dir, sprintf('%s_PercentBiasDiffCompleteCut10.png', psy)),
              plot = gg_pbdiff, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -355,7 +370,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$PB_EucDistance_dir, sprintf('PB_EucDistance_%s.png', scale_name)),
              plot = gg_PBEucDis, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -398,7 +414,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$pre_bias_diffcomp_DiffAbsMeanPmm_dir, sprintf('%s_PercentBiasDiffCompleteDiffAbsMeanPmmCut10.png', psy)),
              plot = gg_pbdiff2, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -436,7 +453,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$CI_CR, sprintf('%s_CI_CoverageRate.png', psy)),
              plot = gg_CICR, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -474,7 +492,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$CI_CR_95diff, sprintf('%s_CI_CoverageRate_95diff.png', psy)),
              plot = gg_CICR_95diff, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -511,7 +530,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$CI_AW, sprintf('%s_AW.png', psy)),
              plot = gg_AW, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -548,7 +568,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$CI_AW_PB, sprintf('%s_AW_PB.png', psy)),
              plot = gg_AWPB, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
   }
@@ -625,7 +646,8 @@ for (method_name in names(simu_summary_method_list)){
       
       ggsave(file.path(save_path_list$res_box, sprintf('%s_y_Bias.png', scale_name)),
              plot = gg_y_bias_box, device = NULL, path = NULL,
-             scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+             scale = 1, width = 12, height = 6, units ="in",
              dpi = 300, limitsize = T)
     }
     
