@@ -1155,28 +1155,3 @@ get_compare_result_batch <- function(simu_summary_list, true_summary_list){
   return(list(compare_result=compare_result, compare_result_mean=compare_result_mean))
 }
 
-# compare simulation and sample results (complete sample data, not true data)
-# "Complete" must be contains in the names of simu_summary_list
-get_compare_result_by_sample_batch <- function(simu_summary_list){
-  # check name
-  check_simu_PsyName <- names(simu_summary_list$info)[unlist(simu_summary_list$info)==F]
-  inter_PsyName <- intersect(check_simu_PsyName, check_true_PsyName)
-  sprintf('Running Psytool Name:\n') %>% cat()
-  sprintf('    %s\n', inter_PsyName) %>% cat()
-  
-  simu_summary_list <- lapply(simu_summary_list, function(x, name){x[name]}, inter_PsyName)
-  true_summary_list <- lapply(true_summary_list, function(x, name){x[name]}, inter_PsyName)
-  
-  # compare
-  compare_result <- map2(simu_summary_list$summary, true_summary_list$summary,
-                         function(simu_summary_boot, true_summary){
-                           lapply(simu_summary_boot, get_compare_result, true_summary[[1]])
-                         })
-  
-  compare_result_mean <- lapply(compare_result, function(psy){
-    add_psy <- reduce(psy, function(boot1, boot2){mapply('+', boot1, boot2, SIMPLIFY = F)})
-    add_psy <- lapply(add_psy, function(indicator, boot_num){indicator / boot_num}, length(psy))
-  })
-  
-  return(list(compare_result=compare_result, compare_result_mean=compare_result_mean))
-}
