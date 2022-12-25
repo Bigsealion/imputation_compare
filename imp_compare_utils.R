@@ -1095,7 +1095,7 @@ get_compare_result <- function(imp_summary, true_summary){
   conf_i <- imp_summary$conf
   conf_t <- true_summary$conf
   
-  res_i <- imp_summary$res$stat_resv
+  res_i <- imp_summary$res$stat_res
   res_t <- true_summary$res$stat_res
   # if (any(is.na(res_i))){print(res_i)}
   
@@ -1156,23 +1156,23 @@ get_compare_result_batch <- function(simu_summary_list, true_summary_list){
 }
 
 
-# compare simulation and true
-# get name which no error and intersect of simu and true
-get_compare_result_batch <- function(simu_summary_list, true_summary_list){
+# compare simulation and complete sample results (not with true data)
+# "Complete" must in names of simu_summary_list
+get_compare_result_by_complete_batch <- function(simu_summary_list, ref_summary_list){
   # check name
   check_simu_PsyName <- names(simu_summary_list$info)[unlist(simu_summary_list$info)==F]
-  check_true_PsyName <- names(true_summary_list$info)[unlist(true_summary_list$info)==F]
-  inter_PsyName <- intersect(check_simu_PsyName, check_true_PsyName)
+  check_ref_PsyName <- names(ref_summary_list$info)[unlist(ref_summary_list$info)==F]
+  inter_PsyName <- intersect(check_simu_PsyName, check_ref_PsyName)
   sprintf('Running Psytool Name:\n') %>% cat()
   sprintf('    %s\n', inter_PsyName) %>% cat()
   
   simu_summary_list <- lapply(simu_summary_list, function(x, name){x[name]}, inter_PsyName)
-  true_summary_list <- lapply(true_summary_list, function(x, name){x[name]}, inter_PsyName)
+  ref_summary_list <- lapply(ref_summary_list, function(x, name){x[name]}, inter_PsyName)
   
   # compare
-  compare_result <- map2(simu_summary_list$summary, true_summary_list$summary,
-                         function(simu_summary_boot, true_summary){
-                           lapply(simu_summary_boot, get_compare_result, true_summary[[1]])
+  compare_result <- map2(simu_summary_list$summary, ref_summary_list$summary,
+                         function(simu_summary_boot, ref_summary_boot){
+                           map2(simu_summary_boot, ref_summary_boot, get_compare_result)
                          })
   
   compare_result_mean <- lapply(compare_result, function(psy){

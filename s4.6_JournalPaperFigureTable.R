@@ -14,11 +14,11 @@ library(patchwork)
 # set parameters ========================================================
 # file list ----------------------------------------------------------
 file_pattern_list <- list()
-# file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
-# file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
+file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
 
-file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
-file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
 # file_pattern_list[["ReHo_Age"]] <- "HarRehoAge_((True|\\d+)(M|m)iss)_NoRep0.8"
@@ -27,10 +27,11 @@ file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRe
 # file_pattern_list[["ReHo_Y2"]] <- "HarRehoAgeSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # out dir ------------------------------------------------------------
-tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
+# tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
+tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-# out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")
-out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # -------------------------------> Modify!
+# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
 # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
 
@@ -52,8 +53,8 @@ for (out_dir_i in c(fig_out_dir, data_out_dir)) {
 
 # figure 1, impute value, NRMSE and PCC, line chart ====================
 # mr is missing_rate, met is method, sc is scale
-if (F) {
-  cat(sprintf("=================== Fig1 impute value compare ===================="))
+if (T) {
+  cat(sprintf("=================== Fig1 impute value compare ====================\n"))
   # set parameters
   {
     source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/"
@@ -262,11 +263,12 @@ if (F) {
 }
 
 # figure 2, model PB, CR and AW, line chart ============================
-if (F) {
-  cat(sprintf("=================== Fig2 impute model compare ===================="))
+if (T) {
+  cat(sprintf("=================== Fig2 impute model compare ====================\n"))
   # set parameter
   {
-    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/"
+    # source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/"
+    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/"
     mis_pattern <- "(True|\\d+)(M|m)iss"
     indicator_name_list <- c("percent_bias", "coverage_rate", "AW_per_bias")
     out_name_list <- list(
@@ -287,7 +289,7 @@ if (F) {
       # get data, mean and std
       for (file_name in dir(source_dir)) {
         if (str_detect(file_name, file_pattern_list[[save_name]])) {
-          print(file_name)
+          cat(sprintf("%s: %s\n", save_name, file_name))
           # load data
           {
             mr <- str_match(file_name, file_pattern_list[[save_name]])[2]

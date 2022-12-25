@@ -1,71 +1,31 @@
-# 2021.01.12
-# s4.2: compare simulation and true
+# 2022.12.23
+# s4.5.1: compare simulation and sample results (but not with true model)
 rm(list=ls())
 source('/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/programm/imp_compare_utils.R')
 library(ggplot2)
 library(reshape2)
-time_op <- Sys.time()
 
 # time
+time_op <- Sys.time()
 
-# set parameter
-# simu_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/cog_50miss_boot100/Summary_Stack.RData'
-# true_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/cog_50miss_boot100/Summary_TRUE_simulation_boot_100_2021-02-13-16:51:56_Formula__step__.RData'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/cog_50miss_boot100'
+# set parameter ================================================================================================
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAge_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoAge_80Miss_NoRep0.8'
 
-# simu_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/simuY_cog_70miss_boot100_CorStep/Summary_Stack.RData'
-# true_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/simuY_cog_70miss_boot100_CorStep/Summary_TRUE_simulation_boot_100_2021-02-24-05:39:23_newY_model__cor_step__.RData'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAgeSimuY_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoAgeSimuY_TrueMiss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/simuY_cog_70miss_boot100_CorStep_1'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/simuY_cog_70miss_boot100_CorStep_1_2'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_ZsHarQCT1_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_ZsHarQCT1_80Miss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/Reho_age_boot100_CorStepVar'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/Reho_age_boot100_CorStepVar'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_IntTCoefSimuY_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_IntTCoefSimuY_TrueMiss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/Reho_age_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/Reho_age_TrueMiss_NoRep0.8'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGender_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGender_TrueMiss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_ZsHarQCT1_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_ZsHarQCT1_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/ReHo_SimuY_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/ReHo_SimuY_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_SimuY_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_SimuY_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_UnNormSimuY_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_UnNormSimuY_80Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/ReHo_UnNormSimuY_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/ReHo_UnNormSimuY_80Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_TCoefSimuY_60Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_TCoefSimuY_60Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/ReHo_TCoefSimuY_40Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/ReHo_TCoefSimuY_40Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_IntTCoefSimuY_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_IntTCoefSimuY_80Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/ReHo_IntTCoefSimuY_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/ReHo_IntTCoefSimuY_80Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_Cov_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/CVLT_Cov_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGender_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoGender_80Miss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAgeSimuY_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoAgeSimuY_80Miss_NoRep0.8'
-
-summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAge_TrueMiss_NoRep0.8'
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2_compare_summary/HarRehoAge_TrueMiss_NoRep0.8'
+summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGenderSimuY_80Miss_NoRep0.8'
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGenderSimuY_80Miss_NoRep0.8'
 
 # scale_choose <- c('Base', 'RO', 'UG', 'GoNogo', 'nBack', 'PassBall', 'CVLT')
 # scale_choose <- c('RO', 'PassBall')
@@ -78,8 +38,11 @@ is_get_summary_data_auto <- T  # will reset simu_path and true_path
 is_remove_method <- T  # will remove summary with method in vector 'remove_method'
 pattern <- 'Imp_Method__(.*?)__'
 
+# other methods will compare with ref method, "Compelte" is complete sample results
+# also can set as "Imp_Method__mice_pmm__", details should to view the "pattern"
+ref_method <- "Complete" 
 
-# get simu_path and true_path auto
+# get simu_path and true_path auto ===============================================================================
 if (is_get_summary_data_auto){
   simu_path <- file.path(summary_dir, 'Summary_Stack.RData')
   
@@ -177,12 +140,24 @@ if (is_remove_method){
   }
 }
 
-# compare simulation and true-------------------------------------
+# checking whether reference method in names(simu_summary_method_list)
+{
+  method_names <- names(simu_summary_method_list)
+  if (ref_method %in% method_names){
+    method_names <- method_names[-which(method_names == ref_method)]
+  }
+  else{
+    cat(sprintf("Error: ref_method '%s' not in input list!\n", ref_method))
+  }
+}
+
+# compare simulation with sample resutls -------------------------------------
 compare_result_method <- list()
-for (method_name in names(simu_summary_method_list)){
+for (method_name in method_names){
   sprintf('method: %s...\n', method_name) %>% cat()
   
-  compare_result_method[[method_name]] <- get_compare_result_batch(simu_summary_method_list[[method_name]], true_summary_list)
+  compare_result_method[[method_name]] <- get_compare_result_by_complete_batch(
+    simu_summary_method_list[[method_name]], simu_summary_method_list[[ref_method]])
   
   sprintf('Now: %s, Total time: %.4f %s\n', 
           Sys.time(), Sys.time() - time_op, attr(Sys.time() - time_op, 'units')) %>% cat()
@@ -309,32 +284,34 @@ for (method_name in names(simu_summary_method_list)){
       })
     })
     
-    sprintf('Diff Complete Cut10 percent bias bar save dir: %s\n',save_path_list$pre_bias_diffcomp_Cut10_dir) %>% cat()
-    for (psy in rownames(percent_bias_matrix2)){
-      sprintf('%s\n', psy) %>% cat()
-      psy_pb <- percent_bias_matrix2[psy, ] %>% as.data.frame()
-      psy_pb_diffcomp <- subset(psy_pb, select=-Complete) - psy_pb[, 'Complete']
-      
-      psy_pb_diffcomp <- cbind(names=rownames(psy_pb), psy_pb_diffcomp)
-      melt_psy_pb_diffcomp <- melt(psy_pb_diffcomp, variable.name='method', value.name='percent_bias')
-      melt_psy_pb_diffcomp[which(melt_psy_pb_diffcomp[,3] > 100),3] <- 100 
-      melt_psy_pb_diffcomp[which(melt_psy_pb_diffcomp[,3] < -100),3] <- -100
-      
-      gg_pbdiff = ggplot(melt_psy_pb_diffcomp, aes(x = names,y = percent_bias,fill = method))+
-        geom_bar(stat ="identity",width = 0.6,position = "dodge")+     
-        # scale_fill_manual(values = c("red","blue"))+
-        labs(x = "variables",y = "precent bias (diff of Complete) Cut100", title = psy)+  
-        # geom_text(aes(label = melt_psy_pb$percent_bias),position=position_dodge(width = 0.5),size = 5,vjust = -0.25)+ 
-        guides(fill = guide_legend(reverse = F))+
-        theme(legend.title = element_blank(),
-              legend.position = 'right',
-              axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))
-      
-      ggsave(file.path(save_path_list$pre_bias_diffcomp_Cut10_dir, sprintf('%s_PercentBiasDiffCompleteCut10.png', psy)),
-             plot = gg_pbdiff, device = NULL, path = NULL,
-            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
-             scale = 1, width = 12, height = 6, units ="in",
-             dpi = 300, limitsize = T)
+    if (F){
+            sprintf('Diff Complete Cut10 percent bias bar save dir: %s\n',save_path_list$pre_bias_diffcomp_Cut10_dir) %>% cat()
+      for (psy in rownames(percent_bias_matrix2)){
+        sprintf('%s\n', psy) %>% cat()
+        psy_pb <- percent_bias_matrix2[psy, ] %>% as.data.frame()
+        psy_pb_diffcomp <- subset(psy_pb, select=-Complete) - psy_pb[, 'Complete']
+        
+        psy_pb_diffcomp <- cbind(names=rownames(psy_pb), psy_pb_diffcomp)
+        melt_psy_pb_diffcomp <- melt(psy_pb_diffcomp, variable.name='method', value.name='percent_bias')
+        melt_psy_pb_diffcomp[which(melt_psy_pb_diffcomp[,3] > 100),3] <- 100 
+        melt_psy_pb_diffcomp[which(melt_psy_pb_diffcomp[,3] < -100),3] <- -100
+        
+        gg_pbdiff = ggplot(melt_psy_pb_diffcomp, aes(x = names,y = percent_bias,fill = method))+
+          geom_bar(stat ="identity",width = 0.6,position = "dodge")+     
+          # scale_fill_manual(values = c("red","blue"))+
+          labs(x = "variables",y = "precent bias (diff of Complete) Cut100", title = psy)+  
+          # geom_text(aes(label = melt_psy_pb$percent_bias),position=position_dodge(width = 0.5),size = 5,vjust = -0.25)+ 
+          guides(fill = guide_legend(reverse = F))+
+          theme(legend.title = element_blank(),
+                legend.position = 'right',
+                axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))
+        
+        ggsave(file.path(save_path_list$pre_bias_diffcomp_Cut10_dir, sprintf('%s_PercentBiasDiffCompleteCut10.png', psy)),
+              plot = gg_pbdiff, device = NULL, path = NULL,
+              #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+              scale = 1, width = 12, height = 6, units ="in",
+              dpi = 300, limitsize = T)
+      }
     }
   }
   
@@ -391,33 +368,39 @@ for (method_name in names(simu_summary_method_list)){
       })
     })
     
-    sprintf('pre_bias_diffcomp_DiffAbsMeanPmm dir: %s\n',save_path_list$pre_bias_diffcomp_DiffAbsMeanPmm_dir) %>% cat()
-    for (psy in rownames(percent_bias_matrix3)){
-      sprintf('%s\n', psy) %>% cat()
-      psy_pb <- percent_bias_matrix3[psy, ] %>% as.data.frame()
-      psy_pb_diffcomp <- subset(psy_pb, select=-Complete) - psy_pb[, 'Complete']
-      psy_pb_diffcomp_DiffAbsMeanPmm <- abs(psy_pb_diffcomp[, "Imp_Method__mice_mean__"]) - abs(psy_pb_diffcomp[, "Imp_Method__mice_pmm__"])
-      psy_pb_diffcomp_DiffAbsMeanPmm[which(psy_pb_diffcomp_DiffAbsMeanPmm > 100)] <- 100
-      psy_pb_diffcomp_DiffAbsMeanPmm[which(psy_pb_diffcomp_DiffAbsMeanPmm < -100)] <- -100
-      psy_pb_diffcomp_DiffAbsMeanPmm <- psy_pb_diffcomp_DiffAbsMeanPmm %>% as.data.frame()
-      
-      psy_pb_diffcomp_DiffAbsMeanPmm <- cbind(names=rownames(psy_pb), diff=psy_pb_diffcomp_DiffAbsMeanPmm)
-      colnames(psy_pb_diffcomp_DiffAbsMeanPmm)[2] <- 'diff'
-      
-      gg_pbdiff2 = ggplot(psy_pb_diffcomp_DiffAbsMeanPmm, aes(x = names,y = diff, fill = names))+
-        geom_bar(stat ="identity",width = 0.8)+     
-        labs(x = "variables",y = "precent bias (diff of Complete) (mean - pmm) Cut100", title = psy)+  
-        guides(fill = guide_legend(reverse = F))+
-        theme(legend.title = element_blank(),
-              legend.position = 'none',
-              axis.text.x = element_text(angle = 90))
-      
-      ggsave(file.path(save_path_list$pre_bias_diffcomp_DiffAbsMeanPmm_dir, sprintf('%s_PercentBiasDiffCompleteDiffAbsMeanPmmCut10.png', psy)),
-             plot = gg_pbdiff2, device = NULL, path = NULL,
-            #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
-             scale = 1, width = 12, height = 6, units ="in",
-             dpi = 300, limitsize = T)
+    if (F) {
+      sprintf("pre_bias_diffcomp_DiffAbsMeanPmm dir: %s\n", save_path_list$pre_bias_diffcomp_DiffAbsMeanPmm_dir) %>% cat()
+      for (psy in rownames(percent_bias_matrix3)) {
+        sprintf("%s\n", psy) %>% cat()
+        psy_pb <- percent_bias_matrix3[psy, ] %>% as.data.frame()
+        psy_pb_diffcomp <- subset(psy_pb, select = -Complete) - psy_pb[, "Complete"]
+        psy_pb_diffcomp_DiffAbsMeanPmm <- abs(psy_pb_diffcomp[, "Imp_Method__mice_mean__"]) - abs(psy_pb_diffcomp[, "Imp_Method__mice_pmm__"])
+        psy_pb_diffcomp_DiffAbsMeanPmm[which(psy_pb_diffcomp_DiffAbsMeanPmm > 100)] <- 100
+        psy_pb_diffcomp_DiffAbsMeanPmm[which(psy_pb_diffcomp_DiffAbsMeanPmm < -100)] <- -100
+        psy_pb_diffcomp_DiffAbsMeanPmm <- psy_pb_diffcomp_DiffAbsMeanPmm %>% as.data.frame()
+
+        psy_pb_diffcomp_DiffAbsMeanPmm <- cbind(names = rownames(psy_pb), diff = psy_pb_diffcomp_DiffAbsMeanPmm)
+        colnames(psy_pb_diffcomp_DiffAbsMeanPmm)[2] <- "diff"
+
+        gg_pbdiff2 = ggplot(psy_pb_diffcomp_DiffAbsMeanPmm, aes(x = names, y = diff, fill = names)) +
+          geom_bar(stat = "identity", width = 0.8) +
+          labs(x = "variables", y = "precent bias (diff of Complete) (mean - pmm) Cut100", title = psy) +
+          guides(fill = guide_legend(reverse = F)) +
+          theme(
+            legend.title = element_blank(),
+            legend.position = "none",
+            axis.text.x = element_text(angle = 90)
+          )
+
+        ggsave(file.path(save_path_list$pre_bias_diffcomp_DiffAbsMeanPmm_dir, sprintf("%s_PercentBiasDiffCompleteDiffAbsMeanPmmCut10.png", psy)),
+          plot = gg_pbdiff2, device = NULL, path = NULL,
+          #  scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+          scale = 1, width = 12, height = 6, units = "in",
+          dpi = 300, limitsize = T
+        )
+      }
     }
+
   }
   
   # out percent CI coverage rate bin
