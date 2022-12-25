@@ -6,7 +6,8 @@ library(logging)
 # set parameter ==========================================================
 # data is X
 data_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/har_csv/"
-data_name <- "HarNoEB_clear_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
+# data_name <- "HarNoEB_clear_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
+data_name <- "HarNoEB_clear_QC2_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
 out_name <- "HarReho"  # ---- MUST CHECKING THIS NAME!!! ----
 
 # data_name <- "HarNoEB_clear_Rest_zReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
@@ -19,9 +20,8 @@ cog_path <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/cog_newgr
 y_name <- "gender"
 # y_name <- "age"
 
-
 out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/"
-out_path <- file.path(out_dir, sprintf("s1.4_%sAAL116_%s.RData", out_name, y_name))
+out_path <- file.path(out_dir, sprintf("s1.4_QC2_%sAAL116_%s.RData", out_name, y_name))
 
 logging_out_path <- file.path(out_dir, "log.txt")
 
@@ -40,7 +40,7 @@ loginfo("=============== RUN START ===============")
 bi_data <- read.csv(data_path)
 load(cog_path)  # var name is single_data_list
 
-cog_info <- select(single_data_list$TotalData$Base, c("RefID", y_name))
+cog_info <- select(single_data_list$TotalData$Base, all_of(c("RefID", y_name)))
 
 out_data <- merge(bi_data, cog_info, by = "RefID", all = FALSE)
 out_data <- dplyr::relocate(out_data, `y_name`, .after = "RefID")

@@ -6,7 +6,8 @@ library(logging)
 # set parameter ==========================================================
 data_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/clear_csv/"
 # data_name <- "clear_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
-data_name <- "clear_Rest_zReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
+# data_name <- "clear_Rest_zReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
+data_name <- "clear_QC2_Rest_ReHo_fbcdwra_REST_AAL116_3mm_7359ID.csv"
 data_path <- file.path(data_dir, data_name)
 
 out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1_data/Reho_age/har_csv/"
