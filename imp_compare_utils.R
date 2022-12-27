@@ -821,21 +821,25 @@ get_imp_cv_result <- function(data, folder_info, model_formula){
 get_imp_cross_validation_compare <- function(imp_data, folder_info, model_formula, is_mice=F){
   if(is_mice){  # MI, data saved as mice format
     m <- imp_data$m
-    res_mat <- matrix(nrow=m, ncol=2, dimnames = list(c(), c('cor', 'RMSE')))
+    # MUST mosify this when adding indicator!!! -------------------------------------------> VIEW!
+    ind_names <- c('cor', 'RMSE', "MAE")
+    res_mat <- matrix(nrow=m, ncol=length(ind_names), dimnames = list(c(), ind_names)) 
     for (i in 1:m){
       complete_data <- complete(imp_data, i)
       res <- get_imp_cv_result(complete_data, folder_info, model_formula)
       res_cor <- cor(res$true_y, res$pred_y)
-      res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2))
-      res_mat[i, ] <- c(res_cor, res_rmse)
+      res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2)) # Reserved for code compatibility, do not use
+      res_mae <- mean(abs(res$true_y - res$pred_y)) # Use MAE instead of RMSE to get correct results
+      res_mat[i, ] <- c(res_cor, res_rmse, res_mae)
     }
     res_vct <- colMeans(res_mat)
   }
   else{  # SI
     res <- get_imp_cv_result(imp_data, folder_info, model_formula)
     res_cor <- cor(res$true_y, res$pred_y)
-    res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2))
-    res_vct <- c(cor=res_cor, RMSE=res_rmse)
+    res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2)) # Reserved for code compatibility, do not use
+    res_mae <- mean(abs(res$true_y - res$pred_y)) # Use MAE instead of RMSE to get correct results
+    res_vct <- c(cor=res_cor, RMSE=res_rmse, MAE=res_mae)
   }
   
   return(res_vct)

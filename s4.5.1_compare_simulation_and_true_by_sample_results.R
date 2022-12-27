@@ -9,23 +9,17 @@ library(reshape2)
 time_op <- Sys.time()
 
 # set parameter ================================================================================================
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAge_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoAge_80Miss_NoRep0.8'
+summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/CVLT_ZsHarQCT1_TrueMiss_NoRep0.8'
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_ZsHarQCT1_TrueMiss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoAgeSimuY_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoAgeSimuY_TrueMiss_NoRep0.8'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/CVLT_IntTCoefSimuY_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_IntTCoefSimuY_80Miss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_ZsHarQCT1_80Miss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_ZsHarQCT1_80Miss_NoRep0.8'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/HarRehoGender_80Miss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGender_80Miss_NoRep0.8'
 
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_IntTCoefSimuY_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/CVLT_IntTCoefSimuY_TrueMiss_NoRep0.8'
-
-# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGender_TrueMiss_NoRep0.8'
-# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGender_TrueMiss_NoRep0.8'
-
-summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/HarRehoGenderSimuY_80Miss_NoRep0.8'
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGenderSimuY_80Miss_NoRep0.8'
+# summary_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
+# out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.2.1_compare_summary_Complete/HarRehoGenderSimuY_TrueMiss_NoRep0.8'
 
 # scale_choose <- c('Base', 'RO', 'UG', 'GoNogo', 'nBack', 'PassBall', 'CVLT')
 # scale_choose <- c('RO', 'PassBall')
@@ -42,7 +36,7 @@ pattern <- 'Imp_Method__(.*?)__'
 # also can set as "Imp_Method__mice_pmm__", details should to view the "pattern"
 ref_method <- "Complete" 
 
-# get simu_path and true_path auto ===============================================================================
+# get simu_path and true_path auto ========================================
 if (is_get_summary_data_auto){
   simu_path <- file.path(summary_dir, 'Summary_Stack.RData')
   
@@ -60,13 +54,13 @@ if (is_get_summary_data_auto){
   sprintf('Auto get file in summary_dir: %s\n', summary_dir) %>% cat()
 }
 
-# mkdir out dir
+# mkdir out dir ============================================================
 if (!file.exists(out_dir)){
   dir.create(out_dir, recursive = T)
   sprintf('Create out dir! %s\n', out_dir) %>% cat()
 }
 
-# load data
+# load data ================================================================
 {
   simu_data_name <- load(simu_path)
   eval(parse(text=sprintf("simu_summary_method_list <- %s", simu_data_name)))
@@ -91,7 +85,7 @@ if (!file.exists(out_dir)){
   }
 }
 
-# remove method
+# remove method ============================================================
 if (is_remove_method){
   for(imp_method in names(simu_summary_method_list)){
     if (str_detect(imp_method, pattern)){
@@ -104,7 +98,7 @@ if (is_remove_method){
   }
 }
 
-# choose scale
+# choose scale =============================================================
 {
   if (is_choose_scale_auto){
     sprintf('Choose scale auto!\n') %>% cat
@@ -140,7 +134,7 @@ if (is_remove_method){
   }
 }
 
-# checking whether reference method in names(simu_summary_method_list)
+# checking whether reference method in names(simu_summary_method_list) =====
 {
   method_names <- names(simu_summary_method_list)
   if (ref_method %in% method_names){
@@ -151,7 +145,7 @@ if (is_remove_method){
   }
 }
 
-# compare simulation with sample resutls -------------------------------------
+# compare simulation with sample resutls ====================================
 compare_result_method <- list()
 for (method_name in method_names){
   sprintf('method: %s...\n', method_name) %>% cat()

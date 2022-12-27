@@ -143,7 +143,7 @@ if(is_compare_by_ImputedValue){
         
         ggsave(file.path(imp_value_out_dir, sprintf('%s_imputed_value.png', scale_name)),
                plot = gg_imp_value_bias_box, device = NULL, path = NULL,
-               scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+               scale = 1, width = 12, height = 6, units = "in",
                dpi = 300, limitsize = T)
         sprintf('%s imputed value saved!\n', scale_name) %>% cat
       }
@@ -290,7 +290,7 @@ if(is_compare_by_CrossValidation){
         
         ggsave(file.path(cv_out_dir, sprintf('CrossValidationCompareEB_%s_%s.png', compare_ind, scale_name)),
                plot = gg_cv, device = NULL, path = NULL,
-               scale = 1, width = 12, height = 6, units =c("in", "cm", "mm"),
+               scale = 1, width = 12, height = 6, units ="in",
                dpi = 300, limitsize = T)
         sprintf('    %s_%s\n', compare_ind, scale_name) %>% cat
       }

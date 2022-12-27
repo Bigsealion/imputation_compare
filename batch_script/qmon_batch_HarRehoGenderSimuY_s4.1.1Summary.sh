@@ -47,31 +47,31 @@ formula_path="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_
 
 sour_dir[1]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${datasetname}_TrueMiss_NoRep0.8
 raw_path[1]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${datasetname}_TrueMiss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-21:59:30.RData"
-save_dir[1]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/${datasetname}_TrueMiss_NoRep0.8
+save_dir[1]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/${datasetname}_TrueMiss_NoRep0.8
 log_path[1]=$log_dir/s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_TrueMiss_NoRep0.8_boot100.txt
 err_path[1]=$error_dir/ERROR_s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_TrueMiss_NoRep0.8_boot100.txt
 
 sour_dir[2]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${datasetname}_20Miss_NoRep0.8
 raw_path[2]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${datasetname}_20Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:00:06.RData"
-save_dir[2]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/${datasetname}_20Miss_NoRep0.8
+save_dir[2]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/${datasetname}_20Miss_NoRep0.8
 log_path[2]=$log_dir/s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_20Miss_NoRep0.8_boot100.txt
 err_path[2]=$error_dir/ERROR_s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_20Miss_NoRep0.8_boot100.txt
 
 sour_dir[3]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${datasetname}_40Miss_NoRep0.8
 raw_path[3]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${datasetname}_40Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:03:15.RData"
-save_dir[3]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/${datasetname}_40Miss_NoRep0.8
+save_dir[3]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/${datasetname}_40Miss_NoRep0.8
 log_path[3]=$log_dir/s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_40Miss_NoRep0.8_boot100.txt
 err_path[3]=$error_dir/ERROR_s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_40Miss_NoRep0.8_boot100.txt
 
 sour_dir[4]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${datasetname}_60Miss_NoRep0.8
 raw_path[4]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${datasetname}_60Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:04:53.RData"
-save_dir[4]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/${datasetname}_60Miss_NoRep0.8
+save_dir[4]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/${datasetname}_60Miss_NoRep0.8
 log_path[4]=$log_dir/s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_60Miss_NoRep0.8_boot100.txt
 err_path[4]=$error_dir/ERROR_s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_60Miss_NoRep0.8_boot100.txt
 
 sour_dir[5]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/${datasetname}_80Miss_NoRep0.8
 raw_path[5]="/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/${datasetname}_80Miss_NoRep0.8/${data_file_name}/simulation_boot_100_2022-11-24-22:06:44.RData"
-save_dir[5]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/${datasetname}_80Miss_NoRep0.8
+save_dir[5]=/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/${datasetname}_80Miss_NoRep0.8
 log_path[5]=$log_dir/s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_80Miss_NoRep0.8_boot100.txt
 err_path[5]=$error_dir/ERROR_s4.1_Summarys_${time_op}_${qsub_name}_${datasetname}_80Miss_NoRep0.8_boot100.txt
 

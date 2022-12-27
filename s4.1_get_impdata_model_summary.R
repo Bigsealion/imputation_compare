@@ -65,7 +65,7 @@ time_op <- Sys.time()
 imp_data_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/CVLT_TCoefSimuY_60Miss_NoRep0.8/'
 raw_data_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/CVLT_TCoefSimuY_60Miss_NoRep0.8/s1.7_SimulationOutcomeData.RData/simulation_boot_100_2021-04-27-16:13:03.RData'
 formula_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.7_simulation_y/cog_newgroup/cvlt_TCoef/newYFormula_model__cor_step__.RData'
-out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/CVLT_TCoefSimuY_60Miss_NoRep0.8'
+out_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/CVLT_TCoefSimuY_60Miss_NoRep0.8'
 
 # imp_data_dir <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s3_impdata/ReHo_TCoefSimuY_40Miss_NoRep0.8/'
 # raw_data_path <- '/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s2_simulation/ReHo_TCoefSimuY_40Miss_NoRep0.8/s1.7_SimulationOutcomeData.RData/simulation_boot_100_2021-04-27-15:37:00.RData'

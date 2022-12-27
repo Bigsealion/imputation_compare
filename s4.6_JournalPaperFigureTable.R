@@ -14,11 +14,11 @@ library(patchwork)
 # set parameters ========================================================
 # file list ----------------------------------------------------------
 file_pattern_list <- list()
-file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
-file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
+# file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
 
-# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
-# file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
 # file_pattern_list[["ReHo_Age"]] <- "HarRehoAge_((True|\\d+)(M|m)iss)_NoRep0.8"
@@ -27,11 +27,10 @@ file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep
 # file_pattern_list[["ReHo_Y2"]] <- "HarRehoAgeSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # out dir ------------------------------------------------------------
-# tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6_JournalOut"
 tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # -------------------------------> Modify!
-# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+# out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # -------------------------------> Modify!
+out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
 # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
 
@@ -57,7 +56,7 @@ if (T) {
   cat(sprintf("=================== Fig1 impute value compare ====================\n"))
   # set parameters
   {
-    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/"
+    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/"
     subdir_name <- "imputed_value"
 
     fig_out_path <- file.path(fig_out_dir, "ImpValueCompare_Data.pdf")
@@ -418,12 +417,12 @@ if (T) {
   }
 }
 
-# fig 3, predict RMSE, PCC, line chart ==================================
+# fig 3, predict MAE, PCC, line chart ==================================
 if (T) {
   cat(sprintf("=================== Fig3 model predict compare ===================="))
   # set parameter
   {
-    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1_summary_data/"
+    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/"
 
     fig_out_path <- file.path(fig_out_dir, "PredictValueCompare_Data.pdf")
     subdir_name <- "cv_res"
@@ -527,7 +526,7 @@ if (T) {
     #   plot_layout(guides = "collect") +
     #   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 
-    gg_combine <- (gg_list_all[["RMSE"]][[1]] + gg_list_all[["RMSE"]][[2]]) /
+    gg_combine <- (gg_list_all[["MAE"]][[1]] + gg_list_all[["MAE"]][[2]]) /
       (gg_list_all[["PCC"]][[1]] + gg_list_all[["PCC"]][[2]]) +
       plot_layout(guides = "collect") +
       plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
