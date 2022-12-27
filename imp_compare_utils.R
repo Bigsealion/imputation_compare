@@ -451,44 +451,6 @@ imp_data_by_method <- function(data, method='mice_pmm'){
   return(list(imp=imp, method=method))
 }
 
-# old version, depracated
-# batch run imp_data_by_method; set a try catch
-{
-  # imp_data_batch <- function(missing_data, method){
-  #   # set method to data
-  #   time_op <- Sys.time()
-  #   
-  #   # get imp result
-  #   imp_res <- list()
-  #   loop_i <- 0
-  #   psy_num <- length(missing_data)
-  #   sprintf('Running imputaion, method: %s...\n', method) %>% cat()
-  #   for (scale_name in names(missing_data)){
-  #     psy_time_op <- Sys.time()
-  #     loop_i = loop_i + 1
-  #     sprintf('    %d/%d, %s...\n', loop_i, psy_num, scale_name) %>% cat()
-  #     imp1 <- tryCatch({
-  #       a=lapply(missing_data[[scale_name]], function(x, method){
-  #         imp_data_by_method(x$simulation_data, method=method)
-  #       }, imp_method)
-  #     },
-  #     error=function(e){
-  #       sprintf('    ERROR!') %>% cat()
-  #       print(e)
-  #       return(-1)
-  #     }
-  #     )
-  #     imp_res[[scale_name]] <- imp1
-  #     sprintf('    used: %.4f %s, total impute time: %.4f %s\n', 
-  #             Sys.time() - psy_time_op, attr(Sys.time() - psy_time_op, 'units'),
-  #             Sys.time() - time_op, attr(Sys.time() - time_op, 'units')) %>% cat()
-  #   }
-  #   
-  #   return(imp_res)
-  # }
-}
-
-
 # batch run imp_data_by_method; set a try catch
 imp_data_batch <- function(missing_data, method){
   # set method to data
@@ -799,19 +761,16 @@ get_imputed_value <- function(imputed_data, miss_coord_list, is_complete=F){
 # get cv result by a complate data
 get_imp_cv_result <- function(data, folder_info, model_formula){
   # using model is lm()
-  # data: 1col is y, other col is x
+  # data: 1 col is y, other col is x
   
   # cross validation
-  true_y <- vector()
-  pred_y <- vector()
+  true_y <- data[, 1]
+  pred_y <- vector(length = nrow(data))
+
   for (i in unique(folder_info)){
-    train_data <- data[folder_info != i, ]
-    test_data <- data[folder_info == i, ]
-    
-    model <- lm(model_formula, train_data)
-    
-    true_y <- c(true_y, test_data[, 1])
-    pred_y <- c(pred_y, predict(model, test_data))
+    test_index <- (folder_info == i)  # get test index
+    model <- lm(model_formula, data[!test_index, ])  # train model
+    pred_y[test_index] <- predict(model, data[test_index, ])  # predict
   }
   
   return(list(true_y=true_y, pred_y=pred_y))
@@ -821,18 +780,21 @@ get_imp_cv_result <- function(data, folder_info, model_formula){
 get_imp_cross_validation_compare <- function(imp_data, folder_info, model_formula, is_mice=F){
   if(is_mice){  # MI, data saved as mice format
     m <- imp_data$m
-    # MUST mosify this when adding indicator!!! -------------------------------------------> VIEW!
-    ind_names <- c('cor', 'RMSE', "MAE")
-    res_mat <- matrix(nrow=m, ncol=length(ind_names), dimnames = list(c(), ind_names)) 
+    res_list <- list()
     for (i in 1:m){
       complete_data <- complete(imp_data, i)
-      res <- get_imp_cv_result(complete_data, folder_info, model_formula)
-      res_cor <- cor(res$true_y, res$pred_y)
-      res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2)) # Reserved for code compatibility, do not use
-      res_mae <- mean(abs(res$true_y - res$pred_y)) # Use MAE instead of RMSE to get correct results
-      res_mat[i, ] <- c(res_cor, res_rmse, res_mae)
+      res_list[[i]] <- get_imp_cv_result(complete_data, folder_info, model_formula)[["pred_y"]]
     }
-    res_vct <- colMeans(res_mat)
+    res <- list(
+      true_y = complete_data[, 1],
+      pred_y = Reduce(function(y1, y2){y1 + y2}, res_list) / m
+    )  # average predicted value of MI
+
+    res_cor <- cor(res$true_y, res$pred_y)
+    res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2)) # Reserved for code compatibility, DO NOT use
+    res_mae <- mean(abs(res$true_y - res$pred_y)) # Use MAE instead of RMSE to get correct results
+
+    res_vct <- c(cor=res_cor, RMSE=res_rmse, MAE=res_mae)
   }
   else{  # SI
     res <- get_imp_cv_result(imp_data, folder_info, model_formula)
@@ -842,7 +804,8 @@ get_imp_cross_validation_compare <- function(imp_data, folder_info, model_formul
     res_vct <- c(cor=res_cor, RMSE=res_rmse, MAE=res_mae)
   }
   
-  return(res_vct)
+  # output indicators and CV true&predict values
+  return(list(ind = res_vct, res = res))  
 }
 
 # batch
@@ -875,6 +838,7 @@ get_imp_cross_validation_compare_batch <- function(source_path, formula_path, is
   # run cv, get result
   time_op <- Sys.time()
   imp_cv_compare <- list()
+  imp_cv_value <- list()
   for (scale_name in names(imp_res)){
     print(scale_name)
     print(Sys.time() - time_op)
@@ -886,143 +850,20 @@ get_imp_cross_validation_compare_batch <- function(source_path, formula_path, is
     for (boot_i in 1:boot_number){
       sprintf('%d ', boot_i) %>% cat
       
-      imp_cv_compare[[scale_name]][[boot_i]] <- get_imp_cross_validation_compare(
+       cv_out <- get_imp_cross_validation_compare(
         imp_res[[scale_name]][[boot_i]]$imp, folder_info, formula_save[[scale_name]], is_mice = is_mice)
+
+      imp_cv_compare[[scale_name]][[boot_i]] <- cv_out$ind
+      imp_cv_value[[scale_name]][[boot_i]] <- cv_out$res
     }
     sprintf('\nNow: %s\n', Sys.time()) %>% cat
   }
   print(Sys.time() - time_op)
   
-  # imp_cv_compare_mean <- sapply(imp_cv_compare, function(sc){rowMeans(as.data.frame(sc))})
-  return(imp_cv_compare)
+  # indicators and CV true&predict values, adding in 2022.12.27 
+  return(list(ind = imp_cv_compare, res = imp_cv_value))
 }
 
-
-# depracated
-# get imp summary batch (not batch version of get_imp_summary_list)
-{
-  # get_imp_summary_list_batch <- function(imp_res, method){
-  #   # method in ['mice_pmm', 'mice_mean', 'complete'] 
-  #   # get summary coefficients and CI
-  #   if (method %in% c('mice_pmm', 'mice_mean')){
-  #     # get model using with
-  #     imp_model_list <- lapply(imp_res, function(psy){
-  #       # get formula
-  #       var <- colnames(psy[[1]]$imp$data)
-  #       fx <- paste(var[-1], collapse = '+')
-  #       fyx <- paste(var[1], fx, sep='~') %>% formula()
-  #       
-  #       # run in boot data
-  #       fit_bootdata <- lapply(psy, function(data, fyx){
-  #         return(with(data$imp, lm(formula(format(fyx)))))
-  #       }, fyx)
-  #     })
-  #     
-  #     # get summary, using pool
-  #     imp_summary_list <- lapply(imp_model_list, function(psy){
-  #       lapply(psy, function(boot){
-  #         if (length(boot$analyses) == 1){
-  #           return(list(summary=summary(pool(boot))[['coefficients']], conf=confint(pool(boot))))
-  #         }
-  #         else{
-  #           all_summary <- summary(pool(boot), 'all', conf.int = T)
-  #           conf <- all_summary[, c("2.5 %", "97.5 %")] %>% as.matrix()
-  #           rownames(conf) <- all_summary[, 'term']
-  #           
-  #           summary_out <- all_summary[, -1]
-  #           rownames(summary_out) <- all_summary[, 'term']
-  #           colnames(summary_out)[which(colnames(summary_out)=='estimate')] <- 'Estimate'
-  #           
-  #           return(list(summary=summary_out, conf=conf))
-  #         }
-  #       })
-  #     })
-  #     
-  #     # check is any aliased in model. if True, this scale is have aliased
-  #     imp_summary_info <- lapply(imp_model_list, function(psy){F})
-  #   }
-  #   else if (method %in% c('CCA')){  # complete data analysis
-  #     # get model
-  #     imp_model_list <- lapply(imp_res, function(psy){
-  #       # get formula
-  #       var <- colnames(psy[[1]]$imp)
-  #       fx <- paste(var[-1], collapse = '+')
-  #       fyx <- paste(var[1], fx, sep='~') %>% formula()
-  #       
-  #       # run in boot data
-  #       fit_bootdata <- lapply(psy, function(data, fyx){
-  #         return(lm(fyx, data$imp))
-  #       }, fyx)
-  #       return(fit_bootdata)
-  #     })
-  #     
-  #     # get summary and CI
-  #     imp_summary_list <- lapply(imp_model_list, function(psy){
-  #       lapply(psy, function(x){
-  #         return(list(summary=summary(x)[['coefficients']], conf=confint(x)))
-  #       })
-  #     })
-  #     
-  #     # check is any aliased in model. if True, this scale is have aliased
-  #     imp_summary_info <- lapply(imp_model_list, function(psy){
-  #       lapply(psy, function(x){
-  #         any(summary(x)$aliased)
-  #       }) %>% unlist %>% any
-  #     })
-  #     
-  #   }
-  #   else if(method == 'complete'){  # which data is complete 
-  #     # get model
-  #     imp_model_list <- lapply(imp_res, function(psy){
-  #       # get formula
-  #       var <- colnames(psy[[1]])
-  #       fx <- paste(var[-1], collapse = '+')
-  #       fyx <- paste(var[1], fx, sep='~') %>% formula()
-  #       
-  #       # run in boot data
-  #       fit_bootdata <- lapply(psy, function(data, fyx){
-  #         return(lm(fyx, data))
-  #       }, fyx)
-  #       return(fit_bootdata)
-  #     })
-  #     
-  #     # get summary and CI
-  #     imp_summary_list <- lapply(imp_model_list, function(psy){
-  #       lapply(psy, function(x){
-  #         return(list(summary=summary(x)[['coefficients']], conf=confint(x)))
-  #       })
-  #     })
-  #     
-  #     # check is any aliased in model. if True, this scale is have aliased
-  #     imp_summary_info <- lapply(imp_model_list, function(psy){
-  #       lapply(psy, function(x){
-  #         any(summary(x)$aliased)
-  #       }) %>% unlist %>% any
-  #     })
-  #   }
-  #   else{
-  #     sprintf('ERROR: Unsupport method: %s\n', method) %>% cat()
-  #     return(1)
-  #   }
-  #   
-  #   # check is any aliased in model. if True, this scale is have aliased
-  #   # imp_summary_info <- lapply(imp_summary_list, function(psy){
-  #   #   lapply(psy, function(boot_summary){
-  #   #     any(boot_summary$summary$aliased)
-  #   #   }) %>% unlist %>% any
-  #   # })
-  #   
-  #   for (psy_name in names(imp_summary_info)){
-  #     if (imp_summary_info[[psy_name]]){
-  #       sprintf('Warning: %s have aliased!\n', psy_name) %>% cat()
-  #     }
-  #   }
-  #   
-  #   # return
-  #   return_list <- list(summary=imp_summary_list, info=imp_summary_info)
-  #   return(return_list)
-  # } 
-}
 
 # s4.4 stack, load summary to same name ------------------------
 get_summary_file <- function(summary_file_path){

@@ -214,22 +214,30 @@ if(is_compare_by_CrossValidation){
   cv_time_op <- Sys.time()
   
   imp_cv_compare_boot_list <- list()
-  
+  imp_cv_res_boot_list <- list()
+
   # run in boot complete data
   sprintf('file: Complete\n') %>% cat()
-  imp_cv_compare_boot_list[['complete']] <-
-    get_imp_cross_validation_compare_batch(raw_data_path, formula_path,
-                                           is_complete_data=T, remove_scale=remove_scale)
+  cv_out_list <- get_imp_cross_validation_compare_batch(
+    raw_data_path, formula_path,
+    is_complete_data = TRUE, remove_scale = remove_scale
+  )
+
+  imp_cv_compare_boot_list[['complete']] <- cv_out_list$ind
+  imp_cv_res_boot_list[['complete']] <- cv_out_list$res
   
-  # run in  boot imputed data
+  # run in boot imputed data
   for (file_name in dir(imp_data_dir)){
     if (str_detect(file_name, pattern)){
       method_name <- str_match(file_name, pattern)[2]
       imp_path <- file.path(imp_data_dir, file_name)
       sprintf('file: %s\n', file_name) %>% cat()
-      imp_cv_compare_boot_list[[method_name]] <-
+      cv_out_list <-
         get_imp_cross_validation_compare_batch(imp_path, formula_path,
                                                is_complete_data=F, remove_scale=remove_scale)
+
+      imp_cv_compare_boot_list[[method_name]] <- cv_out_list$ind
+      imp_cv_res_boot_list[[method_name]] <- cv_out_list$res
     }
   }
   
@@ -290,16 +298,23 @@ if(is_compare_by_CrossValidation){
         
         ggsave(file.path(cv_out_dir, sprintf('CrossValidationCompareEB_%s_%s.png', compare_ind, scale_name)),
                plot = gg_cv, device = NULL, path = NULL,
-               scale = 1, width = 12, height = 6, units ="in",
+               scale = 1, width = 12, height = 6, units = "in",
                dpi = 300, limitsize = T)
         sprintf('    %s_%s\n', compare_ind, scale_name) %>% cat
       }
     }
-          }
-  # save cv result
+  }
+
+  # save cv result -----------------------------------------
+  # cv indicator
   cv_rdata_save_path <- file.path(cv_out_dir, 'CrossValidationBootResult.RData')
   save(imp_cv_compare_boot_list, file = cv_rdata_save_path)
   sprintf('Cross Validatino Compare Result Rdata Saved! %s\n', cv_rdata_save_path) %>% cat
-  
+
+  # CV values
+  cv_values_save_path <- file.path(cv_out_dir, 'CrossValidationBootValues.RData')
+  save(imp_cv_res_boot_list, file = cv_values_save_path)
+  sprintf('Cross Validatino Values Rdata Saved! %s\n', cv_values_save_path) %>% cat
+
   sprintf('Cross Validatino Compare Complete! %s\n', Sys.time()) %>% cat
 }
