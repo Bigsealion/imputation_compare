@@ -776,25 +776,50 @@ get_imp_cv_result <- function(data, folder_info, model_formula){
   return(list(true_y=true_y, pred_y=pred_y))
 }
 
+# mean by z-transform
+mean_by_transform <- function(data, trans_method="z"){
+  if (trans_method == "z") {
+    data_trans_mean <- mean(log((1 + data) / (1 - data)) / 2)
+    mean_data <- (exp(2 * data_trans_mean) - 1) / (exp(2 * data_trans_mean) + 1)
+  }
+  else {
+    stop(sprintf("In function 'mean_by_transform', get unknow transform method: %s\n", trans_method))
+  }
+  return(mean_data)
+}
+
 # get cv result by imp data
 get_imp_cross_validation_compare <- function(imp_data, folder_info, model_formula, is_mice=F){
   if(is_mice){  # MI, data saved as mice format
     m <- imp_data$m
+    # MUST mosify this when adding indicator!!! -------------------------------------------> VIEW!
+    ind_names <- c('cor', 'RMSE', "MAE")
+    res_mat <- matrix(nrow=m, ncol=length(ind_names), dimnames = list(c(), ind_names)) 
+
     res_list <- list()
     for (i in 1:m){
       complete_data <- complete(imp_data, i)
-      res_list[[i]] <- get_imp_cv_result(complete_data, folder_info, model_formula)[["pred_y"]]
+      res_list[[i]] <- get_imp_cv_result(complete_data, folder_info, model_formula)
+
+      res_cor <- cor(res_list[[i]]$true_y, res_list[[i]]$pred_y)
+      res_rmse <- sqrt(mean((res_list[[i]]$true_y - res_list[[i]]$pred_y)^2)) # Reserved for code compatibility, DO NOT use
+      res_mae <- mean(abs(res_list[[i]]$true_y - res_list[[i]]$pred_y)) # Use MAE instead of RMSE to get correct results
+
+      res_mat[i, ] <- c(cor=res_cor, RMSE=res_rmse, MAE=res_mae)
     }
+        
     res <- list(
       true_y = complete_data[, 1],
-      pred_y = Reduce(function(y1, y2){y1 + y2}, res_list) / m
-    )  # average predicted value of MI
+      # pred_y = Reduce(function(y1, y2){y1 + y2}, res_list) / m
+      pred_y = sapply(res_list, function(x){x$pred_y})   # which is a list, with multiple CV results
+    ) 
 
-    res_cor <- cor(res$true_y, res$pred_y)
-    res_rmse <- sqrt(mean((res$true_y - res$pred_y)^2)) # Reserved for code compatibility, DO NOT use
-    res_mae <- mean(abs(res$true_y - res$pred_y)) # Use MAE instead of RMSE to get correct results
+    res_vct <- colMeans(res_mat)
 
-    res_vct <- c(cor=res_cor, RMSE=res_rmse, MAE=res_mae)
+    # if (m > 1){browser()}   # for test
+
+    res_vct["cor"] <- mean_by_transform(res_mat[, "cor"], trans_method = "z")  # replace mean cor
+
   }
   else{  # SI
     res <- get_imp_cv_result(imp_data, folder_info, model_formula)
