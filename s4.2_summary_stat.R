@@ -63,7 +63,7 @@ get_anova_test_result_df <- function(data){
 
   met_ind <- 1
   for (met_i in used_methods) {
-    loginfo(sprintf("One-way ANOAV across missing rate, %s, %s", ind_i, met_i))
+    loginfo(sprintf("One-way ANOAV across missing rate, %s", met_i))
     test_data <- dplyr::filter(data, method == met_i)
 
     # one-way anova
@@ -113,7 +113,7 @@ loginfo("=============== RUN START ===============")
 
 # figure 1, impute value, NRMSE and PCC, -log(p) heatmap ====================
 # mr is missing_rate, met is method, sc is scale
-if (F) {
+if (T) {
   loginfo(sprintf("=================== Fig1 Stat impute value compare ====================\n"))
   # set parameters
   {
@@ -125,6 +125,19 @@ if (F) {
     fig_out_path <- file.path(fig_out_dir, "ImpValueCompare_Stat_%s_%s.pdf") # %s is save_name, and indicator
     ttest_csv_out_path <- file.path(data_out_dir, "ImpValueCompare_PairTtestMethod.csv")
     anova_csv_out_path <- file.path(data_out_dir, "ImpValueCompare_AnovaMissingRate.csv")
+    
+    method_name_fig1_list <- list(
+      "complete" = "Complete",
+      "mice_mean" = "Mean",
+      "mice_norm_pred" = "Pred",
+      "mice_pmm" = "MI",
+      "vim_em" = "EM"
+    )
+
+    indicator_name_fig1_list <- list(
+      "Cor_raw" = "PCC",
+      "NRMSE_raw" = "NRMSE"
+    )
   }
 
   # run in each data pattern =========================================
@@ -176,17 +189,12 @@ if (F) {
       {
         Ind_list_stat <- reshape2::melt(ind_list_all)
         colnames(Ind_list_stat) <- c("value", "scale", "method", "missrate", "indicator", "save_name")
-        Ind_list_stat[which(Ind_list_stat[, "method"] == "mice_mean"), "method"] <- "Mean"
-        Ind_list_stat[which(Ind_list_stat[, "method"] == "mice_norm_pred"), "method"] <- "Pred"
-        Ind_list_stat[which(Ind_list_stat[, "method"] == "vim_em"), "method"] <- "EM"
-        Ind_list_stat[which(Ind_list_stat[, "method"] == "mice_pmm"), "method"] <- "MI"
-        Ind_list_stat[which(Ind_list_stat[, "method"] == "complete"), "method"] <- "Complete"
+
+        Ind_list_stat <- replace_col_by_list(Ind_list_stat, "method", method_name_fig1_list)
+        Ind_list_stat <- replace_col_by_list(Ind_list_stat, "indicator", indicator_name_fig1_list)
 
         Ind_list_stat[, "method"] <- factor(Ind_list_stat[, "method"], levels = method_level)
         Ind_list_stat[, "missrate"] <- factor(Ind_list_stat[, "missrate"], levels = missrate_level)
-
-        Ind_list_stat[which(Ind_list_stat[, "indicator"] == "Cor_raw"), "indicator"] <- "PCC"
-        Ind_list_stat[which(Ind_list_stat[, "indicator"] == "NRMSE_raw"), "indicator"] <- "NRMSE"
       }
 
       # remove mean in PCC
@@ -211,38 +219,7 @@ if (F) {
           for (mr_i in missrate_level) {
             loginfo(sprintf("Pair t test, %s, %s", ind_i, mr_i))
             test_data <- dplyr::filter(Ind_list_stat, missrate == mr_i, indicator == ind_i)
-
-            # using sort to make the rank of method names is same as special order
-            method_comb <- combn(sort(unique(test_data$method), decreasing = TRUE), 2)
-
-            t_test_col_names <- c("method1", "method2", "met1_mean", "met2_mean", "t", "p", "CI1", "CI2", "mean_diff", "sig_lv")
-            t_test_res <- matrix(
-              nrow = ncol(method_comb), ncol = length(t_test_col_names),
-              dimnames = list(c(), t_test_col_names)
-            ) %>% as.data.frame()
-
-            for (comb_i in seq_len(ncol(method_comb))) {
-              paired_data <- dplyr::filter(test_data, method %in% method_comb[, comb_i], save_name == save_name_x)
-
-              is_var_eq <- leveneTest(value ~ method, data = paired_data)["Pr(>F)"] > 0.05
-              t_res <- t.test(value ~ method,
-                data = paired_data,
-                alternative = "two.sided", paired = TRUE, var.equal = is_var_eq
-              )
-
-              t_test_res[comb_i, "method1"] <- method_comb[1, comb_i] %>% as.character()
-              t_test_res[comb_i, "method2"] <- method_comb[2, comb_i] %>% as.character()
-              t_test_res[comb_i, "met1_mean"] <- mean(dplyr::filter(paired_data, method == method_comb[1, comb_i])[, "value"])
-              t_test_res[comb_i, "met2_mean"] <- mean(dplyr::filter(paired_data, method == method_comb[2, comb_i])[, "value"])
-              t_test_res[comb_i, "t"] <- t_res$statistic
-              t_test_res[comb_i, "p"] <- t_res$p.value
-              t_test_res[comb_i, "CI1"] <- t_res$conf.int[[1]]
-              t_test_res[comb_i, "CI2"] <- t_res$conf.int[[2]]
-              t_test_res[comb_i, "mean_diff"] <- t_res$estimate
-              t_test_res[comb_i, "sig_lv"] <- (t_res$p.value < 0.05)
-            }
-
-            stat_list[[ind_i]][[mr_i]] <- t_test_res
+            stat_list[[ind_i]][[mr_i]] <- get_pair_test_result_df(test_data)
           }
         }
 
@@ -256,37 +233,11 @@ if (F) {
 
       # One-Way ANOVA across missing rates for each method -------------------------
       {
+        # get ANOVA list
         mr_anova_stat_list <- list()
-
         for (ind_i in out_ind_names) {
-          anova_col_names <- c("method", "f", "p", "sig_lv")
-          used_methods <- dplyr::filter(Ind_list_stat, indicator == ind_i)$method %>%
-            unique() %>%
-            sort()
-
-          anova_res <- matrix(
-            nrow = length(used_methods), ncol = length(anova_col_names),
-            dimnames = list(c(), anova_col_names)
-          ) %>% as.data.frame()
-
-          met_ind <- 1
-          for (met_i in used_methods) {
-            loginfo(sprintf("One-way ANOAV across missing rate, %s, %s", ind_i, met_i))
-            test_data <- dplyr::filter(Ind_list_stat, method == met_i, indicator == ind_i, save_name == save_name_x)
-
-            # one-way anova
-            aov_out <- aov(value ~ missrate, data = test_data)
-            aov_out_summary <- summary(aov_out)
-
-            anova_res[met_ind, "method"] <- met_i
-            anova_res[met_ind, "f"] <- aov_out_summary[[1]][1, "F value"]
-            anova_res[met_ind, "p"] <- aov_out_summary[[1]][1, "Pr(>F)"]
-            anova_res[met_ind, "sig_lv"] <- (aov_out_summary[[1]][1, "Pr(>F)"] < 0.05)
-
-            met_ind <- met_ind + 1
-          }
-
-          mr_anova_stat_list[[ind_i]] <- anova_res
+          anova_data <- dplyr::filter(Ind_list_stat, indicator == ind_i, save_name == save_name_x)
+          mr_anova_stat_list[[ind_i]] <- get_anova_test_result_df(anova_data)
         }
 
         # get melt df, and generate derived variables
@@ -305,6 +256,10 @@ if (F) {
       for (mr_i in missrate_level) {
         fig_data <- dplyr::filter(stat_list_melt, indicator == ind_i, missrate == mr_i)
 
+        # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
+        fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
+        fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
+
         fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
         fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
         fig_data[, "missrate"] <- factor(fig_data[, "missrate"], levels = missrate_level)
@@ -316,7 +271,7 @@ if (F) {
           ) +
           coord_equal() + # get square rather than rectangular cells
           geom_text(aes(
-            x = method1, y = method2, label = sprintf("%.2f", logp)
+            x = method1, y = method2, label = sprintf("%s\n%.2f",sign, logp)
           )) +
           scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
           labs(x = mr_i, y = "", fill = "-log p") +
@@ -391,7 +346,7 @@ if (F) {
 }
 
 # figure 2, imputed model, PB, CR, AW, -log(p) heatmap ======================
-if (T) {
+if (F) {
   loginfo(sprintf("=================== Fig2 Stat imputed model compare ====================\n"))
 
   # set parameter ===================================================
