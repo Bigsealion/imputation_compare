@@ -1,4 +1,5 @@
 # 2022.12.03 stat
+# Ind_list_stat is not storing same levels in Fig1, 2, 3
 library(stringr)
 library(dplyr)
 library(logging)
@@ -28,7 +29,7 @@ get_pair_test_result_df <- function(data) {
   ) %>% as.data.frame()
 
   for (comb_i in seq_len(ncol(method_comb))) {
-    paired_data <- dplyr::filter(data, method %in% method_comb[, comb_i], save_name == save_name_x)
+    paired_data <- dplyr::filter(data, method %in% method_comb[, comb_i])
 
     is_var_eq <- leveneTest(value ~ method, data = paired_data)["Pr(>F)"] > 0.05
     t_res <- t.test(value ~ method,
@@ -82,23 +83,25 @@ get_anova_test_result_df <- function(data){
 }
 
 # set parameters =================================================
-file_pattern_list <- list()
-file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
-file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+{
+  file_pattern_list <- list()
+  file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8" # --------> Modify!!!
+  file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
-tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
+  tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+  out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")  # --------------------------------> Modify!!!
 
-fig_out_dir <- file.path(out_dir, "Fig")
-data_out_dir <- file.path(out_dir, "Data")
+  fig_out_dir <- file.path(out_dir, "Fig")
+  data_out_dir <- file.path(out_dir, "Data")
 
-logging_out_path <- file.path(out_dir, "logging.txt")
+  logging_out_path <- file.path(out_dir, "logging.txt")
 
-# others --------------------------------------------------------------
-missrate_level <- c("TrueMiss", "20Miss", "40Miss", "60Miss", "80Miss")
-method_level <- c("Complete", "CCA", "Mean", "Pred", "EM", "MI") # MI is PMM
-color_list <- c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#2745a2", "#F564E3")
+  # others --------------------------------------------------------------
+  missrate_level <- c("TrueMiss", "20Miss", "40Miss", "60Miss", "80Miss")
+  method_level <- c("Complete", "CCA", "Mean", "Pred", "EM", "MI") # MI is PMM
+  color_list <- c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#2745a2", "#F564E3")
+}
 
 # mkdir out dir ==================================================
 if (!file.exists(out_dir)) {
@@ -113,7 +116,7 @@ loginfo("=============== RUN START ===============")
 
 # figure 1, impute value, NRMSE and PCC, -log(p) heatmap ====================
 # mr is missing_rate, met is method, sc is scale
-if (T) {
+if (F) {
   loginfo(sprintf("=================== Fig1 Stat impute value compare ====================\n"))
   # set parameters
   {
@@ -218,7 +221,7 @@ if (T) {
           stat_list[[ind_i]] <- list()
           for (mr_i in missrate_level) {
             loginfo(sprintf("Pair t test, %s, %s", ind_i, mr_i))
-            test_data <- dplyr::filter(Ind_list_stat, missrate == mr_i, indicator == ind_i)
+            test_data <- dplyr::filter(Ind_list_stat, missrate == mr_i, indicator == ind_i, save_name == save_name_x)
             stat_list[[ind_i]][[mr_i]] <- get_pair_test_result_df(test_data)
           }
         }
@@ -421,7 +424,6 @@ if (F) {
         Ind_list_stat[, "missrate"] <- factor(Ind_list_stat[, "missrate"], levels = missrate_level)
       }
 
-
       # statistical =============================================
       {
         # pair t test in each missing rate ------------------------------------
@@ -429,7 +431,7 @@ if (F) {
           stat_list <- list()
           for (mr_i in missrate_level) {
             loginfo(sprintf("Pair t test, %s, %s", ind_i, mr_i))
-            test_data <- dplyr::filter(Ind_list_stat, missrate == mr_i)
+            test_data <- dplyr::filter(Ind_list_stat, missrate == mr_i, save_name == save_name_x)
 
             stat_list[[mr_i]] <- get_pair_test_result_df(test_data)
           }
@@ -553,3 +555,214 @@ if (F) {
   }
 
 }
+
+# fig 3, predict MAE, PCC, -log(p) heatmap ==================================
+if (T) {
+  loginfo(sprintf("=================== Fig3 Stat model predict compare ===================="))
+  # set parameter
+  {
+    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/"
+    subdir_name <- "cv_res"
+
+    fig_out_path <- file.path(fig_out_dir, "ImpPredictCompare_Stat_%s_%s.pdf") # %s is save_name, and indicator
+    ttest_csv_out_path <- file.path(data_out_dir, "ImpPredictCompare_PairTtestMethod.csv")
+    anova_csv_out_path <- file.path(data_out_dir, "ImpPredictCompare_AnovaMissingRate.csv")
+
+    out_ind_names <- c("MAE", "PCC", "RMSE")
+
+    method_name_fig3_list <- list(
+      "complete" = "Complete",
+      "mice_mean" = "Mean",
+      "mice_norm_pred" = "Pred",
+      "mice_pmm" = "MI",
+      "vim_em" = "EM"
+    )
+  }
+
+  # load data in a list ==========================================
+  Ind_list_all <- list()
+  for (save_name in names(file_pattern_list)) {
+    loginfo(sprintf("%s...\n", save_name))
+    # load data
+    data_list <- list()
+    for (file_name in dir(source_dir)) {
+      if (str_detect(file_name, file_pattern_list[[save_name]])) {
+        loginfo(sprintf("Load data: %s, %s\n", save_name, file_name))
+        missing_rate <- str_match(file_name, file_pattern_list[[save_name]])[2]
+
+        subdir_path <- file.path(source_dir, file_name, subdir_name)
+        subfile_path <- file.path(subdir_path, "CrossValidationBootResult.RData")
+
+        load(subfile_path) # name is imp_cv_compare_boot_list
+
+        # get summary
+        Ind_list_all[[save_name]][[missing_rate]] <-
+          lapply(imp_cv_compare_boot_list, function(met) {
+            lapply(met, function(sc) {
+              cv_res <- sapply(sc, function(boot) {
+                boot
+              }) %>%
+                t() %>%
+                as.data.frame()
+            })
+          })
+      }
+    }
+  }
+
+  # melt as df ===================================================
+  {
+    Ind_list_stat <- reshape2::melt(Ind_list_all)
+    colnames(Ind_list_stat) <- c("indicator", "value", "scale", "method", "missrate", "save_name")
+    Ind_list_stat <- replace_col_by_list(Ind_list_stat, "method", method_name_fig3_list)
+
+    Ind_list_stat[, "indicator"] <- as.character(Ind_list_stat[, "indicator"])
+    Ind_list_stat[which(Ind_list_stat[, "indicator"] == "cor"), "indicator"] <- "PCC"
+
+    Ind_list_stat[, "method"] <- factor(Ind_list_stat[, "method"], levels = method_level)
+    Ind_list_stat[, "missrate"] <- factor(Ind_list_stat[, "missrate"], levels = missrate_level)
+
+  }
+
+  # get stat results =============================================
+  {
+    t_test_all_list <- list()
+    anova_all_list <- list()
+    for (save_name_i in names(file_pattern_list)){
+      for (ind_i in out_ind_names) {
+        # pair t test in each missing rate ------------------------------------
+        {
+          stat_list <- list()  # temp save
+          for (mr_i in missrate_level) {
+            loginfo(sprintf("Pair t test, %s, %s, %s",save_name_i, ind_i, mr_i))
+            test_data <- dplyr::filter(
+              Ind_list_stat, missrate == mr_i,
+              save_name == save_name_i, indicator == ind_i
+            )
+
+            stat_list[[mr_i]] <- get_pair_test_result_df(test_data)
+          }
+
+          # get melt df, and generate derived variables
+          stat_list_melt <- dplyr::bind_rows(stat_list, .id = "missrate")
+          stat_list_melt <- mutate(stat_list_melt, logp = -log(p, 10))
+
+          t_test_all_list[[save_name_i]][[ind_i]] <- stat_list_melt # for save csv
+        }
+
+        # One-Way ANOVA across missing rates for each method -------------------------   
+        {
+          loginfo(sprintf("One way ANOVA, %s, %s", save_name_i, ind_i))
+
+          anova_data <- dplyr::filter(Ind_list_stat, save_name == save_name_i, indicator == ind_i)
+          anova_res <- get_anova_test_result_df(anova_data)
+          anova_res <- mutate(anova_res, logp = -log(p, 10))
+
+          anova_all_list[[save_name_i]][[ind_i]] <- anova_res
+        }
+      }
+    }
+  }
+
+  # ggplot stat heatmap, and save ================================
+  gg_comb_list_all <- list()
+  for (save_name_i in names(file_pattern_list)) {
+    for (ind_i in out_ind_names) {
+      loginfo(sprintf("get stat heatmap, %s, %s", save_name_i, ind_i))
+      # t test heatmap -------------------------------------------------------
+      gg_t_list <- list()
+      loginfo("Pair t test ggplot...")
+      for (mr_i in missrate_level) {
+        fig_data <- dplyr::filter(t_test_all_list[[save_name_i]][[ind_i]], missrate == mr_i)
+        fig_data[is.na(fig_data[, "logp"]), "logp"] <- 0
+        # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
+        fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
+        fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
+
+        fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
+        fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
+        fig_data[, "missrate"] <- factor(fig_data[, "missrate"], levels = missrate_level)
+
+        gg_t_list[[mr_i]] <-
+          ggplot(fig_data, aes(x = method1, y = method2, fill = logp)) +
+          geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
+            width = 1, height = 1, linewidth = 2, color = "white"
+          ) +
+          coord_equal() + # get square rather than rectangular cells
+          geom_text(aes(
+            x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
+          )) +
+          scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
+          labs(x = mr_i, y = "", fill = "-log p") +
+          theme_classic()
+      }
+
+      # anova heatmap --------------------------------------------------------
+      {
+        loginfo("ANOVA test ggplot...")
+        fig_data <- anova_all_list[[save_name_i]][[ind_i]]
+        fig_data[, "method"] <- factor(fig_data[, "method"], levels = method_level)
+        fig_data[, "indicator"] <- ind_i
+
+        gg_anova <-
+          ggplot(fig_data, aes(x = indicator, y = method, fill = logp)) +
+          geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
+            width = 1, height = 1, linewidth = 2, color = "white"
+          ) +
+          coord_equal() + # get square rather than rectangular cells
+          geom_text(aes(
+            x = indicator, y = method, label = sprintf("%.2f", logp)
+          )) +
+          scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
+          labs(x = "", y = "", fill = "-log p") +
+          theme_classic() +
+          theme(
+            axis.ticks = element_blank(),
+            axis.line = element_blank()
+          )
+      }
+
+      # combine figure, save =================================================
+      {
+        loginfo("Combine ggplot...")
+        gg_comb_list_all[[save_name_i]][[ind_i]] <-
+          ((gg_t_list[[1]] | gg_t_list[[2]] |
+            gg_t_list[[3]] | gg_t_list[[4]] |
+            gg_t_list[[5]]) +
+            plot_layout(guides = "collect") +
+            plot_annotation(
+              tag_levels = "a", tag_prefix = "(", tag_suffix = ")",
+              title = sprintf("%s, %s", save_name, ind_i),
+              subtitle = sprintf("Pair t-test -log(p) value")
+            )) |
+            (gg_anova)
+
+        ind_out_path <- sprintf(fig_out_path, save_name_i, ind_i)
+        ggsave(ind_out_path,
+          plot = gg_comb_list_all[[save_name_i]][[ind_i]], device = NULL, path = NULL,
+          scale = 1, width = 22, height = 6, units = "in",
+          dpi = 300, limitsize = TRUE
+        )
+        loginfo(sprintf("%s, %s, Statistical heatmap figure saved: %s\n", save_name_i, ind_i, ind_out_path))
+      }
+    }
+  }
+
+  # melt stat results as df, and save to csv
+  {
+    # pair t test
+    ttest_df <- lapply(t_test_all_list, dplyr::bind_rows, .id = "save_name") %>%
+          dplyr::bind_rows(., .id = "indicator")
+    # anova
+    anova_df <- lapply(anova_all_list, dplyr::bind_rows, .id = "save_name") %>%
+          dplyr::bind_rows(., .id = "indicator")
+
+    # output to csv
+    write.csv(ttest_df, file = ttest_csv_out_path, row.names = FALSE) # t test
+    write.csv(anova_df, file = anova_csv_out_path, row.names = FALSE) # one-way ANOVA
+
+    loginfo(sprintf("csv saved: %s\n", ttest_csv_out_path))
+    loginfo(sprintf("csv saved: %s\n", anova_csv_out_path))
+  }
+}
+
