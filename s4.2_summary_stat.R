@@ -85,12 +85,16 @@ get_anova_test_result_df <- function(data){
 # set parameters =================================================
 {
   file_pattern_list <- list()
-  file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8" # --------> Modify!!!
-  file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+  file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
+  file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+
+  # file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+  # file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
   tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-  out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")  # --------------------------------> Modify!!!
+  # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # --------------------------------> Modify!!!
+  out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 
   fig_out_dir <- file.path(out_dir, "Fig")
   data_out_dir <- file.path(out_dir, "Data")
@@ -564,11 +568,12 @@ if (T) {
     source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.1.1_summary_data/"
     subdir_name <- "cv_res"
 
-    fig_out_path <- file.path(fig_out_dir, "ImpPredictCompare_Stat_%s_%s.pdf") # %s is save_name, and indicator
+    fig_ttest_out_path <- file.path(fig_out_dir, "ImpPredictCompare_Ttest.pdf")
     ttest_csv_out_path <- file.path(data_out_dir, "ImpPredictCompare_PairTtestMethod.csv")
     anova_csv_out_path <- file.path(data_out_dir, "ImpPredictCompare_AnovaMissingRate.csv")
 
-    out_ind_names <- c("MAE", "PCC", "RMSE")
+    out_ind_names <- c("MAE", "PCC")
+    # out_ind_names <- c("MAE", "PCC", "RMSE")
 
     method_name_fig3_list <- list(
       "complete" = "Complete",
@@ -664,98 +669,14 @@ if (T) {
     }
   }
 
-  # ggplot stat heatmap, and save ================================
-  gg_comb_list_all <- list()
-  for (save_name_i in names(file_pattern_list)) {
-    for (ind_i in out_ind_names) {
-      loginfo(sprintf("get stat heatmap, %s, %s", save_name_i, ind_i))
-      # t test heatmap -------------------------------------------------------
-      gg_t_list <- list()
-      loginfo("Pair t test ggplot...")
-      for (mr_i in missrate_level) {
-        fig_data <- dplyr::filter(t_test_all_list[[save_name_i]][[ind_i]], missrate == mr_i)
-        fig_data[is.na(fig_data[, "logp"]), "logp"] <- 0
-        # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
-        fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
-        fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
-
-        fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
-        fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
-        fig_data[, "missrate"] <- factor(fig_data[, "missrate"], levels = missrate_level)
-
-        gg_t_list[[mr_i]] <-
-          ggplot(fig_data, aes(x = method1, y = method2, fill = logp)) +
-          geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
-            width = 1, height = 1, linewidth = 2, color = "white"
-          ) +
-          coord_equal() + # get square rather than rectangular cells
-          geom_text(aes(
-            x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
-          )) +
-          scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
-          labs(x = mr_i, y = "", fill = "-log p") +
-          theme_classic()
-      }
-
-      # anova heatmap --------------------------------------------------------
-      {
-        loginfo("ANOVA test ggplot...")
-        fig_data <- anova_all_list[[save_name_i]][[ind_i]]
-        fig_data[, "method"] <- factor(fig_data[, "method"], levels = method_level)
-        fig_data[, "indicator"] <- ind_i
-
-        gg_anova <-
-          ggplot(fig_data, aes(x = indicator, y = method, fill = logp)) +
-          geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
-            width = 1, height = 1, linewidth = 2, color = "white"
-          ) +
-          coord_equal() + # get square rather than rectangular cells
-          geom_text(aes(
-            x = indicator, y = method, label = sprintf("%.2f", logp)
-          )) +
-          scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
-          labs(x = "", y = "", fill = "-log p") +
-          theme_classic() +
-          theme(
-            axis.ticks = element_blank(),
-            axis.line = element_blank()
-          )
-      }
-
-      # combine figure, save =================================================
-      {
-        loginfo("Combine ggplot...")
-        gg_comb_list_all[[save_name_i]][[ind_i]] <-
-          ((gg_t_list[[1]] | gg_t_list[[2]] |
-            gg_t_list[[3]] | gg_t_list[[4]] |
-            gg_t_list[[5]]) +
-            plot_layout(guides = "collect") +
-            plot_annotation(
-              tag_levels = "a", tag_prefix = "(", tag_suffix = ")",
-              title = sprintf("%s, %s", save_name, ind_i),
-              subtitle = sprintf("Pair t-test -log(p) value")
-            )) |
-            (gg_anova)
-
-        ind_out_path <- sprintf(fig_out_path, save_name_i, ind_i)
-        ggsave(ind_out_path,
-          plot = gg_comb_list_all[[save_name_i]][[ind_i]], device = NULL, path = NULL,
-          scale = 1, width = 22, height = 6, units = "in",
-          dpi = 300, limitsize = TRUE
-        )
-        loginfo(sprintf("%s, %s, Statistical heatmap figure saved: %s\n", save_name_i, ind_i, ind_out_path))
-      }
-    }
-  }
-
-  # melt stat results as df, and save to csv
+  # melt stat results as df, and save to csv ======================
   {
     # pair t test
-    ttest_df <- lapply(t_test_all_list, dplyr::bind_rows, .id = "save_name") %>%
-          dplyr::bind_rows(., .id = "indicator")
+    ttest_df <- lapply(t_test_all_list, dplyr::bind_rows, .id = "indicator") %>%
+          dplyr::bind_rows(., .id = "save_name")
     # anova
-    anova_df <- lapply(anova_all_list, dplyr::bind_rows, .id = "save_name") %>%
-          dplyr::bind_rows(., .id = "indicator")
+    anova_df <- lapply(anova_all_list, dplyr::bind_rows, .id = "indicator") %>%
+          dplyr::bind_rows(., .id = "save_name")
 
     # output to csv
     write.csv(ttest_df, file = ttest_csv_out_path, row.names = FALSE) # t test
@@ -764,5 +685,66 @@ if (T) {
     loginfo(sprintf("csv saved: %s\n", ttest_csv_out_path))
     loginfo(sprintf("csv saved: %s\n", anova_csv_out_path))
   }
+
+  # ggplot stat heatmap, combine and save =========================
+  {
+    # get base image ----------------------------------------
+    gg_t_summary_list <- list() # t test
+    for (save_name_i in names(file_pattern_list)) {
+      # t test ---------------------------------------------
+
+      fig_data <- dplyr::filter(ttest_df, save_name == save_name_i)
+      fig_data[is.na(fig_data[, "logp"]), "logp"] <- 0
+
+      # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
+      fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
+      fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
+
+      fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
+      fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
+      fig_data[, "missrate"] <- factor(fig_data[, "missrate"], levels = missrate_level)
+
+      gg_t_summary_list[[save_name_i]] <-
+        ggplot(fig_data, aes(x = method1, y = method2, fill = logp)) +
+        geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
+          width = 1, height = 1, linewidth = 2, color = "white"
+        ) +
+        facet_grid(indicator ~ missrate) +
+        coord_equal() + # get square rather than rectangular cells
+        geom_text(aes(
+          x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
+        )) +
+        scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
+        labs(x = "", y = "", fill = "-log p", title = save_name_i) +
+        theme_bw(base_size = 18) +
+        theme(
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.title = element_text(hjust = 0.5)
+        )
+    }
+
+    # combine image, and save -------------------------------
+    {
+      gg_comb_t_test <-
+        (gg_t_summary_list[[1]] / gg_t_summary_list[[2]]) +
+        plot_layout(guides = "collect") +
+        plot_annotation(
+          tag_levels = "a", tag_prefix = "(", tag_suffix = ")",
+        )
+
+      ggsave(fig_ttest_out_path,
+        plot = gg_comb_t_test, device = NULL, path = NULL,
+        scale = 1, width = 20, height = 16, units = "in",
+        dpi = 300, limitsize = TRUE
+      )
+      loginfo(sprintf("Out: %s", fig_ttest_out_path))
+    }
+  }
 }
 
+# fig 4, output Anova data by csv files =====================================
+# the csv is output by figure 1-3
+if (F){
+
+}
