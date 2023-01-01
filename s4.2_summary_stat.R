@@ -93,8 +93,8 @@ get_anova_test_result_df <- function(data){
 
   tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-  # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # --------------------------------> Modify!!!
-  out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+  out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # --------------------------------> Modify!!!
+  # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 
   fig_out_dir <- file.path(out_dir, "Fig")
   data_out_dir <- file.path(out_dir, "Data")
@@ -108,9 +108,11 @@ get_anova_test_result_df <- function(data){
 }
 
 # mkdir out dir ==================================================
-if (!file.exists(out_dir)) {
-  dir.create(out_dir, recursive = TRUE)
-  sprintf("Create out dir! %s\n", out_dir) %>% cat()
+for (out_dir_i in c(out_dir, fig_out_dir, data_out_dir)) {
+  if (!file.exists(out_dir_i)) {
+    dir.create(out_dir_i, recursive = TRUE)
+    sprintf("Create out dir! %s\n", out_dir_i) %>% cat()
+  }
 }
 
 # logging setting ================================================
@@ -120,7 +122,7 @@ loginfo("=============== RUN START ===============")
 
 # figure 1, impute value, NRMSE and PCC, -log(p) heatmap ====================
 # mr is missing_rate, met is method, sc is scale
-if (T) {
+if (F) {
   loginfo(sprintf("=================== Fig1 Stat impute value compare ====================\n"))
   # set parameters
   {
@@ -704,8 +706,88 @@ if (F) {
   }
 }
 
-# fig 4, output Anova data by csv files =====================================
-# the csv is output by figure 1-3
-if (F){
+# fig 4, output Anova across missing rate by csv files =====================================
+# the .csv data is output by figure 1-3
+# so, must run fig 1-3 at least once before run fig 4
+if (T) {
+  # set parameter --------------------------------------------
+  {
+    source_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
+    subdir_vec <- c("CVLTTGMVY1_ReHoGenderY2_3x2", "CVLTTGMV_ReHoGender_3x2")
+    file_name_vec <- list(
+      "Value" = "ImpValueCompare_AnovaMissingRate.csv",
+      "Model" = "ImpModelCompare_AnovaMissingRate.csv",
+      "Predict" = "ImpPredictCompare_AnovaMissingRate.csv"
+    )
 
+    ind_anova_levels <- c("NRMSE", "PCCV", "PB", "CR", "AW", "MAE", "PCCP")
+    savename_anova_levels <- c("CVLT_TGMV", "ReHo_Gender", "CVLT_Y1", "ReHo_Y2")
+
+    fig_anova_out_path <- file.path(tar_dir, "CVLT_ReHo_TrueSimuY_AONVA_MissingRate.pdf")
+  }
+
+  # load data --------------------------------------------
+  {
+    data_list <- list()
+    data_n <- 1
+    for (subdir_i in subdir_vec) {
+      for (file_i in names(file_name_vec)) {
+        # load
+        csv_path <- file.path(source_dir, subdir_i, "Data", file_name_vec[file_i])
+        loginfo("Load csv: %s", csv_path)
+        data_loaded <- read.csv(csv_path)
+
+        # PCCV in Value compare, and PCCP in predict compare
+        if (file_i == "Value") {
+          data_loaded[data_loaded[, "indicator"] == "PCC", "indicator"] <- "PCCV"
+        } else if (file_i == "Predict") {
+          data_loaded[data_loaded[, "indicator"] == "PCC", "indicator"] <- "PCCP"
+        }
+
+        # storing to list
+        data_list[[data_n]] <- data_loaded
+        data_n <- data_n + 1
+      }
+    }
+
+    data_df <- dplyr::bind_rows(data_list)
+  }
+  
+  # get figure and save ----------------------------------
+  {
+    # convert data
+    data_df[, "indicator"] <- factor(data_df[, "indicator"], levels = ind_anova_levels)
+    data_df[, "method"] <- factor(data_df[, "method"], levels = rev(method_level))  # for better figure
+    data_df[, "save_name"] <- factor(data_df[, "save_name"], levels = savename_anova_levels)
+
+    data_df[is.infinite(data_df[, "logp"]), "logp"] <- 320  # The maximum precision of the data type is 10^-320
+
+    # plot
+    loginfo("Ploting ANOVA of method across missing rate...")
+    gg_anova <-
+      ggplot(data_df, aes(x = indicator, y = method, fill = logp)) +
+      geom_tile(aes(fill = ifelse(logp > 100, 100, logp)),
+        width = 1, height = 1, linewidth = 2, color = "white"
+      ) +
+      facet_wrap("save_name") +
+      coord_equal() + # get square rather than rectangular cells
+      geom_text(aes(
+        x = indicator, y = method, label = sprintf("%.2f", logp)
+      )) +
+      scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
+      labs(x = "", y = "", fill = "-log p") +
+      theme_bw(base_size = 18) +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5)
+      )
+
+    ggsave(fig_anova_out_path,
+      plot = gg_anova, device = NULL, path = NULL,
+      scale = 1, width = 12, height = 10, units = "in",
+      dpi = 300, limitsize = TRUE
+    )
+    loginfo(sprintf("Out: %s", fig_anova_out_path))
+  }
 }
