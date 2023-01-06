@@ -105,6 +105,11 @@ get_anova_test_result_df <- function(data){
   missrate_level <- c("TrueMiss", "20Miss", "40Miss", "60Miss", "80Miss")
   method_level <- c("Complete", "CCA", "Mean", "Pred", "EM", "MI") # MI is PMM
   color_list <- c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#2745a2", "#F564E3")
+
+  # Indicator*method: value(4+3=7), model(3*5=15), pred(2*6=12), sum=7+15+12=34
+  # stat times = indicator * method * missrate * dataset = 34 * 5 * 4 = 680
+  # t test logp thre = -log(0.05 / 680, 10) = 4.133539
+  t_test_logp_thre <- -log(0.05 / 680, 10)
 }
 
 # mkdir out dir ==================================================
@@ -122,7 +127,7 @@ loginfo("=============== RUN START ===============")
 
 # figure 1, impute value, NRMSE and PCC, -log(p) heatmap ====================
 # mr is missing_rate, met is method, sc is scale
-if (F) {
+if (T) {
   loginfo(sprintf("=================== Fig1 Stat impute value compare ====================\n"))
   # set parameters
   {
@@ -264,6 +269,9 @@ if (F) {
     ttest_df <- dplyr::bind_rows(t_test_all_list, .id = "save_name")
     anova_df <- dplyr::bind_rows(anova_all_list, .id = "save_name")
 
+    # add sig
+    ttest_df["BofSig"] <- ifelse(ttest_df["logp"] < t_test_logp_thre, "", "*")
+
     # melt data
     write.csv(ttest_df, file = ttest_csv_out_path, row.names = FALSE) # t test
     write.csv(anova_df, file = anova_csv_out_path, row.names = FALSE) # one-way ANOVA
@@ -291,6 +299,7 @@ if (F) {
       m1_mean_data[, "indicator"] <- "PCC"
       m1_mean_data[, "logp"] <- NA
       m1_mean_data[, "sign"] <- ""
+      m1_mean_data[, "BofSig"] <- ""
       fig_data <- rbind(fig_data, m1_mean_data)
 
       # convert to factor to control image order
@@ -306,7 +315,7 @@ if (F) {
         facet_grid(indicator ~ missrate) +
         coord_equal() + # get square rather than rectangular cells
         geom_text(aes(
-          x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
+          x = method1, y = method2, label = sprintf("%s%s\n%.2f", BofSig, sign, logp)
         )) +
         scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
         labs(x = "", y = "", fill = "-log p", title = save_name_i) +
@@ -340,7 +349,7 @@ if (F) {
 }
 
 # figure 2, imputed model, PB, CR, AW, -log(p) heatmap ======================
-if (F) {
+if (T) {
   loginfo(sprintf("=================== Fig2 Stat imputed model compare ====================\n"))
 
   # set parameter ===================================================
@@ -457,6 +466,9 @@ if (F) {
     anova_df <- lapply(anova_all_list, dplyr::bind_rows, .id = "save_name") %>%
           dplyr::bind_rows(., .id = "indicator")
 
+    # add sig
+    ttest_df["BofSig"] <- ifelse(ttest_df["logp"] < t_test_logp_thre, "", "*")
+
     # output to csv
     write.csv(ttest_df, file = ttest_csv_out_path, row.names = FALSE) # t test
     write.csv(anova_df, file = anova_csv_out_path, row.names = FALSE) # one-way ANOVA
@@ -477,6 +489,7 @@ if (F) {
       # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
       fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
       fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
+      fig_data[is.na(fig_data[, "BofSig"]), "BofSig"] <- ""
 
       fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
       fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
@@ -491,7 +504,7 @@ if (F) {
         facet_grid(indicator ~ missrate) +
         coord_equal() + # get square rather than rectangular cells
         geom_text(aes(
-          x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
+          x = method1, y = method2, label = sprintf("%s%s\n%.2f", BofSig, sign, logp)
         )) +
         scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
         labs(x = "", y = "", fill = "-log p", title = save_name_i) +
@@ -524,7 +537,7 @@ if (F) {
 }
 
 # fig 3, predict MAE, PCC, -log(p) heatmap ==================================
-if (F) {
+if (T) {
   loginfo(sprintf("=================== Fig3 Stat model predict compare ===================="))
   # set parameter
   {
@@ -637,6 +650,9 @@ if (F) {
     # pair t test
     ttest_df <- lapply(t_test_all_list, dplyr::bind_rows, .id = "indicator") %>%
           dplyr::bind_rows(., .id = "save_name")
+    # add sig
+    ttest_df["BofSig"] <- ifelse(ttest_df["logp"] < t_test_logp_thre, "", "*")
+
     # anova
     anova_df <- lapply(anova_all_list, dplyr::bind_rows, .id = "indicator") %>%
           dplyr::bind_rows(., .id = "save_name")
@@ -662,6 +678,7 @@ if (F) {
       # if average(method1) > average(method2), set to "+", else "-", and "E" means "equal"
       fig_data <- mutate(fig_data, sign = ifelse(sign(t) < 0, "+", "-"))
       fig_data[is.na(fig_data[, "sign"]), "sign"] <- "E"
+      fig_data[is.na(fig_data[, "BofSig"]), "BofSig"] <- ""
 
       fig_data[, "method1"] <- factor(fig_data[, "method1"], levels = method_level)
       fig_data[, "method2"] <- factor(fig_data[, "method2"], levels = method_level)
@@ -675,7 +692,7 @@ if (F) {
         facet_grid(indicator ~ missrate) +
         coord_equal() + # get square rather than rectangular cells
         geom_text(aes(
-          x = method1, y = method2, label = sprintf("%s\n%.2f", sign, logp)
+          x = method1, y = method2, label = sprintf("%s%s\n%.2f", BofSig, sign, logp)
         )) +
         scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
         labs(x = "", y = "", fill = "-log p", title = save_name_i) +
@@ -723,7 +740,8 @@ if (T) {
     ind_anova_levels <- c("NRMSE", "PCCV", "PB", "CR", "AW", "MAE", "PCCP")
     savename_anova_levels <- c("CVLT_TGMV", "ReHo_Gender", "CVLT_Y1", "ReHo_Y2")
 
-    fig_anova_out_path <- file.path(tar_dir, "CVLT_ReHo_TrueSimuY_AONVA_MissingRate.pdf")
+    out_dir_name <- "All_CVLT_ReHo_TrueSimuY"
+    fig_anova_out_path <- file.path(tar_dir, out_dir_name, "CVLT_ReHo_TrueSimuY_AONVA_MissingRate.pdf")
   }
 
   # load data --------------------------------------------
@@ -762,6 +780,11 @@ if (T) {
 
     data_df[is.infinite(data_df[, "logp"]), "logp"] <- 320  # The maximum precision of the data type is 10^-320
 
+    # get threshold
+    p_thre <- -log(0.05 / nrow(data_df), 10)
+    data_df["sig"] <- ifelse(data_df["logp"] > p_thre, "*", "")
+    loginfo(sprintf("Anova Sig, -logp threshold: %.4f", p_thre))
+
     # plot
     loginfo("Ploting ANOVA of method across missing rate...")
     gg_anova <-
@@ -772,7 +795,7 @@ if (T) {
       facet_wrap("save_name") +
       coord_equal() + # get square rather than rectangular cells
       geom_text(aes(
-        x = indicator, y = method, label = sprintf("%.2f", logp)
+        x = indicator, y = method, label = sprintf("%s\n%.2f", sig, logp)
       )) +
       scale_fill_material("orange", reverse = FALSE, limits = c(0, 100)) +
       labs(x = "", y = "", fill = "-log p") +

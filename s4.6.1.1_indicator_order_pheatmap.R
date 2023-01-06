@@ -124,27 +124,38 @@ if (!file.exists(out_dir)) {
       .names = "{.col}_{.fn}"
     ))
 
-  rank_summary2 <- data_df_method_order[, c("scale_save_name", "missrate", used_method_level)] %>%
-    group_by(scale_save_name, missrate) %>%
-    summarise(across(everything(),
-      list(mean = function(x) {
-        mean(x, na.rm = TRUE)
-      }),
-      .names = "{.col}"
-    ))
+    rank_summary_rank <- apply(rank_summary[, -1], 1, rank) %>% t %>% cbind(rank_summary[, 1], .)
 
-    rank_summary2_rank <- rank_summary2
-    rank_summary2_rank[, used_method_level] <- apply(rank_summary2[, used_method_level], 1, rank) %>% t
+    cat(sprintf("Total Rank of indicators rank:\n"))
+    print(rank_summary_rank)
 
-    arrange(rank_summary2_rank, missrate)
+    # summary rank-indicator rank in dataset & missrate
+    if (F) {
+      rank_summary2 <- data_df_method_order[, c("scale_save_name", "missrate", used_method_level)] %>%
+        group_by(scale_save_name, missrate) %>%
+        summarise(across(everything(),
+          list(mean = function(x) {
+            mean(x, na.rm = TRUE)
+          }),
+          .names = "{.col}"
+        ))
 
-    rank_summary2_rank %>% as.data.frame() %>%  select(-scale_save_name) %>% group_by(missrate) %>%
-     summarise(across(everything(),
-      list(mean = function(x) {
-        mean(x, na.rm = TRUE)
-      }),
-      .names = "{.col}"
-    ))
+      rank_summary2_rank <- rank_summary2
+      rank_summary2_rank[, used_method_level] <- apply(rank_summary2[, used_method_level], 1, rank) %>% t()
+
+      arrange(rank_summary2_rank, missrate)
+
+      rank_summary2_rank %>%
+        as.data.frame() %>%
+        select(-scale_save_name) %>%
+        group_by(missrate) %>%
+        summarise(across(everything(),
+          list(mean = function(x) {
+            mean(x, na.rm = TRUE)
+          }),
+          .names = "{.col}"
+        ))
+    }
 
   # z-transform ---------------------------------------------
   z_summary <- data_df_method_z[, c("scale_save_name", used_method_level)] %>%
@@ -152,35 +163,38 @@ if (!file.exists(out_dir)) {
     summarise(across(everything(),
       list(mean = function(x) {
         mean(x, na.rm = TRUE)
-      }, sd = function(x) {
-        sd(x, na.rm = TRUE)
-      }),
-      .names = "{.col}_{.fn}"
-    ))
-
-  z_summary2 <- data_df_method_z[, c("scale_save_name", "missrate", used_method_level)] %>%
-    group_by(scale_save_name, missrate) %>%
-    summarise(across(everything(),
-      list(mean = function(x) {
-        mean(x, na.rm = TRUE)
       }),
       .names = "{.col}"
     ))
 
-  z_summary2_rank <- z_summary2
-  z_summary2_rank[, used_method_level] <- apply(z_summary2_rank[, used_method_level], 1, rank) %>% t
+    # summary z-indicator rank in dataset & missrate
+    if (F) {
+      z_summary2 <- data_df_method_z[, c("scale_save_name", "missrate", used_method_level)] %>%
+        group_by(scale_save_name, missrate) %>%
+        summarise(across(everything(),
+          list(mean = function(x) {
+            mean(x, na.rm = TRUE)
+          }),
+          .names = "{.col}"
+        ))
 
-  arrange(z_summary2_rank, missrate)
+      z_summary2_rank <- z_summary2
+      z_summary2_rank[, used_method_level] <- apply(z_summary2_rank[, used_method_level], 1, rank) %>% t()
 
-  z_summary2_rank %>% as.data.frame() %>%  select(-scale_save_name) %>% group_by(missrate) %>%
-    summarise(across(everything(),
-    list(mean = function(x) {
-      mean(x, na.rm = TRUE)
-    }),
-    .names = "{.col}"
-  ))
+      arrange(z_summary2_rank, missrate)
+
+      z_summary2_rank %>%
+        as.data.frame() %>%
+        select(-scale_save_name) %>%
+        group_by(missrate) %>%
+        summarise(across(everything(),
+          list(mean = function(x) {
+            mean(x, na.rm = TRUE)
+          }),
+          .names = "{.col}"
+        ))
+    }
 }
-
 
 # heatmap =========================================================
 {
@@ -198,15 +212,14 @@ if (!file.exists(out_dir)) {
         width = 1, height = 1, linewidth = 2, color = "white"
       ) +
       facet_grid(ind ~ scale_save_name) +
-      # scale_fill_material("orange", reverse = FALSE, limits = c(1, 5)) +
-      scale_fill_gradientn(colors = c("blue", "lightblue", "yellow3", "orige", "red")) +
+      scale_fill_material("orange", reverse = TRUE) +
       labs(x = "", y = "", fill = "Rank", title = "Indicator Rank") +
       theme_bw(base_size = 18) +
       theme(
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         plot.title = element_text(hjust = 0.5),
-        # aspect.ratio = 1
+        aspect.ratio = 1
       )
 
     ggsave(fig_rank_out_path,
@@ -214,7 +227,7 @@ if (!file.exists(out_dir)) {
       scale = 1, width = 14, height = 14, units = "in",
       dpi = 300, limitsize = TRUE
     )
-    cat(sprintf("Out: %s", fig_rank_out_path))
+    cat(sprintf("Out: %s\n", fig_rank_out_path))
   }
 
   # z -------------------------------------------------------------------------
@@ -230,15 +243,15 @@ if (!file.exists(out_dir)) {
       geom_tile(aes(fill = value),
         width = 1, height = 1, linewidth = 2, color = "white"
       ) +
+      coord_equal() +
       facet_grid(ind ~ scale_save_name) +
-      scale_fill_material("orange", reverse = FALSE) +
+      scale_fill_material("orange", reverse = TRUE) +
       labs(x = "", y = "", fill = "Z Score", title = "Indicator Z Score") +
       theme_bw(base_size = 18) +
       theme(
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         plot.title = element_text(hjust = 0.5),
-        # aspect.ratio = 1
       )
 
     ggsave(fig_z_out_path,
