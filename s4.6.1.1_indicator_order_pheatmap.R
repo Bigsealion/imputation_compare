@@ -27,11 +27,10 @@ replace_col_by_list <- function(data, replace_col, replace_list) {
   fig_rank_out_path <- file.path(out_dir, "Indicator_Rank.pdf")
   fig_z_out_path <- file.path(out_dir, "Indicator_zscore.pdf")
 
-  logging_out_path <- file.path(out_dir, "Indicator_rank_logging.txt")
+  table_rank_out_path <- file.path(out_dir, "Indicator_Rank_summary.csv")
+  table_z_out_path <- file.path(out_dir, "Indicator_Ztrans_summary.csv")
 
   # others --------------------------------------------------------------
-  color_list <- c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#2745a2", "#F564E3")
-
   used_method_level <- c("CCA", "Mean", "Pred", "EM", "MI")
   used_ind_level <- c("NRMSE", "PB", "CR", "AW", "MAE")
   used_mr_level_list <- list(
@@ -112,19 +111,23 @@ if (!file.exists(out_dir)) {
     }) %>% t()
 }
 
-# indicator rank/z summary
+# indicator rank/z summary, save =================================
 {
-  # rank ---------------------------------------------
-  rank_summary <- data_df_method_order[, c("scale_save_name", used_method_level)] %>%
-    group_by(scale_save_name) %>%
-    summarise(across(everything(),
-      list(mean = function(x) {
-        mean(x, na.rm = TRUE)
-      }),
-      .names = "{.col}_{.fn}"
-    ))
+  # get table
+  {
+    # rank ---------------------------------------------
+    rank_summary <- data_df_method_order[, c("scale_save_name", used_method_level)] %>%
+      group_by(scale_save_name) %>%
+      summarise(across(everything(),
+        list(mean = function(x) {
+          mean(x, na.rm = TRUE)
+        }),
+        .names = "{.col}"
+      ))
 
-    rank_summary_rank <- apply(rank_summary[, -1], 1, rank) %>% t %>% cbind(rank_summary[, 1], .)
+    rank_summary_rank <- apply(rank_summary[, -1], 1, rank) %>%
+      t() %>%
+      cbind(rank_summary[, 1], .)
 
     cat(sprintf("Total Rank of indicators rank:\n"))
     print(rank_summary_rank)
@@ -157,15 +160,15 @@ if (!file.exists(out_dir)) {
         ))
     }
 
-  # z-transform ---------------------------------------------
-  z_summary <- data_df_method_z[, c("scale_save_name", used_method_level)] %>%
-    group_by(scale_save_name) %>%
-    summarise(across(everything(),
-      list(mean = function(x) {
-        mean(x, na.rm = TRUE)
-      }),
-      .names = "{.col}"
-    ))
+    # z-transform ---------------------------------------------
+    z_summary <- data_df_method_z[, c("scale_save_name", used_method_level)] %>%
+      group_by(scale_save_name) %>%
+      summarise(across(everything(),
+        list(mean = function(x) {
+          mean(x, na.rm = TRUE)
+        }),
+        .names = "{.col}"
+      ))
 
     # summary z-indicator rank in dataset & missrate
     if (F) {
@@ -194,6 +197,16 @@ if (!file.exists(out_dir)) {
           .names = "{.col}"
         ))
     }
+  }
+
+  # save
+  {
+    write.csv(rank_summary, file = table_rank_out_path, row.names = FALSE)
+    write.csv(z_summary, file = table_z_out_path, row.names = FALSE)
+
+    loginfo(sprintf("Table Out: %s", table_rank_out_path))
+    loginfo(sprintf("Table Out: %s", table_z_out_path))
+  }
 }
 
 # heatmap =========================================================
@@ -227,7 +240,7 @@ if (!file.exists(out_dir)) {
       scale = 1, width = 14, height = 14, units = "in",
       dpi = 300, limitsize = TRUE
     )
-    cat(sprintf("Out: %s\n", fig_rank_out_path))
+    loginfo(sprintf("Out: %s\n", fig_rank_out_path))
   }
 
   # z -------------------------------------------------------------------------
@@ -259,6 +272,6 @@ if (!file.exists(out_dir)) {
       scale = 1, width = 14, height = 14, units = "in",
       dpi = 300, limitsize = TRUE
     )
-    cat(sprintf("Out: %s", fig_z_out_path))
+    loginfo(sprintf("Fig Out: %s", fig_z_out_path))
   }
 }
