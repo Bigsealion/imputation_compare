@@ -54,7 +54,7 @@ if (F) {
 
 # info 2, cvlt mean, sd, missing rate
 # 1 base info cvlt
-if (T) {
+if (F) {
     rm(list = ls())
     # set parameter --------------------------------------------------------
     {
@@ -120,5 +120,36 @@ if (T) {
         save_path <- file.path(out_dir, sprintf(save_name, ds_i))
         write.csv(data_info_list_summary_bind, file = save_path, row.names = TRUE)
         cat(sprintf("Out: %s\n", save_path))
+    }
+}
+
+# info 3, get model coefficents, cvlt, reho
+if (T) {
+    rm(list = ls())
+    # set parameters
+    {
+        formual_path_list <- list(
+            "CVLT" = "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_CVLT_ZsHarQCT1_CorCombine_Data.Rdata/model__cor_step__.RData",
+            "ReHo" = "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s1.5_formula/s1.4_HarRehoAAL116_Gender.RData/model__cor_step__.RData"
+        )
+
+        out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete/All_CVLT_ReHo_TrueSimuY/"
+        save_name <- "ModelCoefficents_%s.csv"
+    }
+
+    # load, and out coef csv
+    for (ds_i in names(formual_path_list)) {
+        loginfo("%s...", ds_i)
+        coef_path <- formual_path_list[[ds_i]]
+        # load
+        coef_load_name <- load(coef_path)
+        eval(parse(text = sprintf("load_coef <- %s", coef_load_name)))
+        ds_coef <- load_coef[[1]]$coefficients %>% as.data.frame()
+        colnames(ds_coef) <- c("coefficients")
+
+        # out coef
+        out_path <- file.path(out_dir, sprintf(save_name, ds_i))
+        write.csv(ds_coef, file = out_path, row.names = TRUE)
+        loginfo("Coef out: %s", out_path)
     }
 }
