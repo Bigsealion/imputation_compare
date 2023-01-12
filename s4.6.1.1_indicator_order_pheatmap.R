@@ -19,10 +19,9 @@ replace_col_by_list <- function(data, replace_col, replace_list) {
 {
   raw_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete/"
 
-
   source_dir_vec <- c("CVLTTGMV_ReHoGender_3x2", "CVLTTGMVY1_ReHoGenderY2_3x2")
 
-  out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete/All_CVLT_ReHo_TrueSimuY/"
+  out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete/All_CVLT_ReHo_TrueSimuY_AllInd/"
 
   fig_rank_out_path <- file.path(out_dir, "Indicator_Rank.pdf")
   fig_z_out_path <- file.path(out_dir, "Indicator_zscore.pdf")
@@ -32,7 +31,7 @@ replace_col_by_list <- function(data, replace_col, replace_list) {
 
   # others --------------------------------------------------------------
   used_method_level <- c("CCA", "Mean", "Pred", "EM", "MI")
-  used_ind_level <- c("NRMSE", "PB", "CR", "AW", "MAE")
+  used_ind_level <- c("NRMSE", "PCCV", "PB", "CR", "AW", "MAE", "PCCP")
   used_mr_level_list <- list(
     "TrueMiss" = "TrueMiss",
     "X20Miss" = "20Miss",
@@ -63,17 +62,21 @@ if (!file.exists(out_dir)) {
 }
 
 # data reshape and rename ========================================
+# smaller is batter
 {
+  loginfo("Used method: %s", used_method_level)
+
   # convert to order mode (The larger the value, the worse)
   data_df_c <- filter(data_df, method %in% c("Complete", used_method_level))
   data_df_c <- gather(data_df, missrate, value, all_of(names(used_mr_level_list))) %>%
     spread(method, value)
 
-  # MAE, Method_Value - Complete_Value
-  for (m_i in used_method_level) {
-    data_df_c[data_df_c[, "ind"] == "MAE", m_i] <-
-      abs(data_df_c[data_df_c[, "ind"] == "MAE", m_i] - data_df_c[data_df_c[, "ind"] == "MAE", "Complete"])
-  }
+  # PCCV, * -1
+  data_df_c[data_df_c[, "ind"] == "PCCV", used_method_level] <-
+    -data_df_c[data_df_c[, "ind"] == "PCCV", used_method_level]
+
+  # mean in PCCV set to 0
+  data_df_c[data_df_c[, "ind"] == "PCCV", "Mean"]  <- 0
 
   # AW, abs
   data_df_c[data_df_c[, "ind"] == "AW", used_method_level] <-
@@ -82,6 +85,18 @@ if (!file.exists(out_dir)) {
   # CR, * -1
   data_df_c[data_df_c[, "ind"] == "CR", used_method_level] <-
     -(data_df_c[data_df_c[, "ind"] == "CR", used_method_level])
+
+  # MAE, Method_Value - Complete_Value
+  for (m_i in used_method_level) {
+    data_df_c[data_df_c[, "ind"] == "MAE", m_i] <-
+      abs(data_df_c[data_df_c[, "ind"] == "MAE", m_i] - data_df_c[data_df_c[, "ind"] == "MAE", "Complete"])
+  }
+
+  # PCCP, Method_Value - Complete_Value
+  for (m_i in used_method_level) {
+    data_df_c[data_df_c[, "ind"] == "PCCP", m_i] <-
+      abs(data_df_c[data_df_c[, "ind"] == "PCCP", m_i] - data_df_c[data_df_c[, "ind"] == "PCCP", "Complete"])
+  }
 
   # remove method and indicators
   data_df_c <- dplyr::filter(data_df_c, ind %in% used_ind_level) %>% select(-all_of("Complete"))
@@ -134,6 +149,15 @@ if (!file.exists(out_dir)) {
 
     # summary rank-indicator rank in dataset & missrate
     if (F) {
+      rank_summary_ind <- data_df_method_order[, c("scale_save_name", "ind", used_method_level)] %>%
+        group_by(scale_save_name, ind) %>%
+        summarise(across(everything(),
+          list(mean = function(x) {
+            mean(x, na.rm = TRUE)
+          }),
+          .names = "{.col}"
+        )) %>% as.data.frame()
+
       rank_summary2 <- data_df_method_order[, c("scale_save_name", "missrate", used_method_level)] %>%
         group_by(scale_save_name, missrate) %>%
         summarise(across(everything(),
@@ -232,12 +256,12 @@ if (!file.exists(out_dir)) {
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         plot.title = element_text(hjust = 0.5),
-        aspect.ratio = 1
+        aspect.ratio = 0.5
       )
 
     ggsave(fig_rank_out_path,
       plot = gg_order_ind_heatmap, device = NULL, path = NULL,
-      scale = 1, width = 14, height = 14, units = "in",
+      scale = 1, width = 14, height = 12, units = "in",
       dpi = 300, limitsize = TRUE
     )
     loginfo(sprintf("Out: %s\n", fig_rank_out_path))
@@ -269,7 +293,7 @@ if (!file.exists(out_dir)) {
 
     ggsave(fig_z_out_path,
       plot = gg_z_ind_heatmap, device = NULL, path = NULL,
-      scale = 1, width = 14, height = 14, units = "in",
+      scale = 1, width = 12, height = 16, units = "in",
       dpi = 300, limitsize = TRUE
     )
     loginfo(sprintf("Fig Out: %s", fig_z_out_path))
