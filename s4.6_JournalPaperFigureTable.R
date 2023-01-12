@@ -14,11 +14,11 @@ library(patchwork)
 # set parameters ========================================================
 # file list ----------------------------------------------------------
 file_pattern_list <- list()
-# file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
-# file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
+file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"  # -----> Modify!
+file_pattern_list[["ReHo_Gender"]] <- "HarRehoGender_((True|\\d+)(M|m)iss)_NoRep0.8"
 
-file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
-file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["CVLT_Y1"]] <- "CVLT_IntTCoefSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
+# file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRep0.8"
 
 # file_pattern_list[["CVLT_TGMV"]] <- "CVLT_ZsHarQCT1_((True|\\d+)(M|m)iss)_NoRep0.8"
 # file_pattern_list[["ReHo_Age"]] <- "HarRehoAge_((True|\\d+)(M|m)iss)_NoRep0.8"
@@ -29,8 +29,8 @@ file_pattern_list[["ReHo_Y2"]] <- "HarRehoGenderSimuY_((True|\\d+)(M|m)iss)_NoRe
 # out dir ------------------------------------------------------------
 tar_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete"
 
-# out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # -------------------------------> Modify!
-out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
+out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoGender_3x2")  # -------------------------------> Modify!
+# out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoGenderY2_3x2")
 # out_dir <- file.path(tar_dir, "CVLTTGMV_ReHoAge")
 # out_dir <- file.path(tar_dir, "CVLTTGMVY1_ReHoAgeY2")
 
@@ -372,12 +372,12 @@ if (T) {
             legend.text = element_text(size = 12)
           )
 
-        if (indicator_name == "coverage_rate"){
-          # add 95% CR hline in figure
-          gg_list_all[[indicator_name]][[save_name]]  <-
-            gg_list_all[[indicator_name]][[save_name]] +
-            geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 0.5)
-        }
+        # if (indicator_name == "coverage_rate"){
+        #   # add 95% CR hline in figure
+        #   gg_list_all[[indicator_name]][[save_name]]  <-
+        #     gg_list_all[[indicator_name]][[save_name]] +
+        #     geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 0.5)
+        # }
       }
     }
 
