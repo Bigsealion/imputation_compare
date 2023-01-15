@@ -24,6 +24,7 @@ replace_col_by_list <- function(data, replace_col, replace_list) {
   out_dir <- "/gpfs/lab/liangmeng/members/liyifan/R/imp_compare/s4.6.1_JournalOutComplete/All_CVLT_ReHo_TrueSimuY_AllInd/"
 
   fig_rank_out_path <- file.path(out_dir, "Indicator_Rank.pdf")
+  fig_rank_out_path2 <- file.path(out_dir, "Indicator_summary_Rank.pdf")
   fig_z_out_path <- file.path(out_dir, "Indicator_zscore.pdf")
 
   table_rank_out_path <- file.path(out_dir, "Indicator_Rank_summary.csv")
@@ -62,7 +63,7 @@ if (!file.exists(out_dir)) {
 }
 
 # data reshape and rename ========================================
-# smaller is batter
+# smaller is better
 {
   loginfo("Used method: %s", used_method_level)
 
@@ -147,17 +148,19 @@ if (!file.exists(out_dir)) {
     cat(sprintf("Total Rank of indicators rank:\n"))
     print(rank_summary_rank)
 
+    # Mean order rank across missing rate of each indicator in each datasets 
+    rank_summary_ind <- data_df_method_order[, c("scale_save_name", "ind", used_method_level)] %>%
+      group_by(scale_save_name, ind) %>%
+      summarise(across(everything(),
+        list(mean = function(x) {
+          mean(x, na.rm = TRUE)
+        }),
+        .names = "{.col}"
+      )) %>%
+      as.data.frame()
+
     # summary rank-indicator rank in dataset & missrate
     if (F) {
-      rank_summary_ind <- data_df_method_order[, c("scale_save_name", "ind", used_method_level)] %>%
-        group_by(scale_save_name, ind) %>%
-        summarise(across(everything(),
-          list(mean = function(x) {
-            mean(x, na.rm = TRUE)
-          }),
-          .names = "{.col}"
-        )) %>% as.data.frame()
-
       rank_summary2 <- data_df_method_order[, c("scale_save_name", "missrate", used_method_level)] %>%
         group_by(scale_save_name, missrate) %>%
         summarise(across(everything(),
@@ -265,6 +268,38 @@ if (!file.exists(out_dir)) {
       dpi = 300, limitsize = TRUE
     )
     loginfo(sprintf("Out: %s\n", fig_rank_out_path))
+  }
+
+  # Mean order rank across missing rate of each indicator in each datasets ----
+  {
+    fig_order_ind_data <- gather(rank_summary_ind, method, value, all_of(used_method_level))
+    fig_order_ind_data[, "ind"] <- factor(fig_order_ind_data[, "ind"], levels = rev(used_ind_level))
+    fig_order_ind_data[, "method"] <- factor(fig_order_ind_data[, "method"], levels = used_method_level)
+    fig_order_ind_data[, "scale_save_name"] <- factor(fig_order_ind_data[, "scale_save_name"], levels = scale_level)
+
+    gg_order_ind_heatmap2 <-
+      ggplot(fig_order_ind_data, aes(x = method, y = ind, fill = value)) +
+      geom_tile(aes(fill = value),
+        width = 1, height = 1, linewidth = 2, color = "white"
+      ) +
+      facet_wrap(~scale_save_name, nrow = 2) +
+      scale_fill_material("orange", reverse = TRUE) +
+      labs(x = "", y = "", fill = "Rank", title = "Average Indicator Rank") +
+      theme_bw(base_size = 18) +
+      geom_text(aes(label = value)) +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 0.5
+      )
+
+    ggsave(fig_rank_out_path2,
+      plot = gg_order_ind_heatmap2, device = NULL, path = NULL,
+      scale = 1, width = 14, height = 8, units = "in",
+      dpi = 300, limitsize = TRUE
+    )
+    loginfo(sprintf("Out: %s\n", fig_rank_out_path2))
   }
 
   # z -------------------------------------------------------------------------
